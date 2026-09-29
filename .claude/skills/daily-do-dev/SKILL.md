@@ -19,7 +19,7 @@ Confirm you are on the designated working branch, then read `docs/Daily-Do-Curre
 
 ## What Is Daily-Do
 
-A phone-first daily planner modeled on the Michael Hyatt Full Focus notebook: One Thing, Top 3, meetings from Google Calendar, notes, and a 6am digest that turns yesterday's Claude and ChatGPT conversations into ideas and next steps. Single user (Justin).
+A phone-first daily planner modeled on the Michael Hyatt Full Focus notebook: a projects grid for the big picture, One Thing, Top 3, meetings from Google Calendar, notes, and a 6am digest that turns yesterday's Claude and ChatGPT conversations into ideas and next steps. Single user (Justin).
 
 ## Tech Stack
 
@@ -55,6 +55,6 @@ After each round: push, update the PR, update `docs/Daily-Do-Current-State.md`, 
 ## What NOT To Do
 
 - Don't rebuild Fort Work screens (Rocks, Projects, Habits, etc.).
-- Don't add boxed cards everywhere. Idea cards are the only bordered objects on Today.
+- Don't add extra sections to Today. Match the Superlist-inspired reference.
 - Don't scrape Claude.ai or ChatGPT from the server or store their passwords.
 - Don't add libraries for things a few lines of code can do.

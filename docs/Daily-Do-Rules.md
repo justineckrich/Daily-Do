@@ -22,13 +22,13 @@ See "Locked Decisions" in [Daily-Do-Project-Brief.md](Daily-Do-Project-Brief.md)
 - Google Calendar read-only.
 - AI chat capture by Chrome extension + 6am digest. No server-side scraping, no stored Claude/ChatGPT passwords.
 - Claude API for extraction.
-- Notebook-clean design from `design/today-reference.html`.
+- Superlist-inspired design from `design/today-reference.html`, with the projects grid at the top of Today.
 
 ## Deferred / Parked Roadmap
 
 Considered and set aside to keep Daily-Do lean. Do not re-propose unless Justin brings them up.
 
-- Fort Work's Rocks, Projects, Habits, Speed Triage, Side Panel, and Unpack screens.
+- Fort Work's Rocks, Projects, Habits, Speed Triage, Side Panel, and Unpack screens. (The projects grid on Today is a lightweight overview, not Fort Work's Projects screen.)
 - Team features, sharing, assigning tasks to others.
 - Full task manager (lists, tags, due dates beyond today).
 - Native iOS/Android apps.

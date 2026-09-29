@@ -7,9 +7,9 @@
 
 ## Round State
 
-- **Last round shipped:** 0 (project foundation: docs, rules, design reference)
-- **Next round ready:** 1 (app skeleton + Today page with saving)
-- **Total rounds shipped:** 0
+- **Last round shipped:** 1 (projects grid + Superlist-inspired redesign of the reference)
+- **Next round ready:** 2 (app skeleton + Today page with saving)
+- **Total rounds shipped:** 2 (0–1, docs and design only)
 
 ---
 
@@ -18,6 +18,7 @@
 - Repo created, `main` initialized.
 - Project Brief, Current State, Rules, CLAUDE.md, dev skill.
 - Today page design reference (`design/today-reference.html`) with sample data.
+- Round 1: projects grid at the top of Today; restyled to a Superlist-inspired look.
 
 ## What's In Progress
 
@@ -33,36 +34,38 @@
 
 ### Ready to Build
 
-**Round 1 — Skeleton + Today page**
+**Round 2 — Skeleton + Today page**
 1. Next.js + TypeScript + Tailwind app, design tokens from the reference.
-2. Supabase schema (`days`, `priorities`, `meetings`, `captures`, `ideas`) and magic-link login limited to Justin's email.
-3. Today page: One Thing, Top 3, Notes, all saving automatically.
-4. Past days: previous/next day navigation.
+2. Supabase schema (`projects`, `days`, `priorities`, `meetings`, `captures`, `ideas`) and magic-link login limited to Justin's email.
+3. Today page: projects grid, One Thing, Top 3, Notes, all saving automatically.
+4. Projects: add, rename, color, archive; tag Top 3 items to a project. Past days navigation.
 5. Deploy to Netlify; installable on the phone home screen.
 
-**Round 2 — Meetings from Google Calendar**
+**Round 3 — Meetings from Google Calendar**
 1. Google OAuth (read-only calendar scope), connect button in Settings.
 2. Today's events shown in the Meetings section, refreshed on open.
 
-**Round 3 — Capture + extraction**
+**Round 4 — Capture + extraction**
 1. Capture bar: quick thought or pasted conversation.
 2. Claude API extraction into ideas (title, summary, next step).
 3. Idea actions: Make Top 3, Keep, Let go. Ideas screen.
 
-**Round 4 — Chrome extension**
+**Round 5 — Chrome extension**
 1. MV3 extension: settings page for the Daily-Do URL and personal token.
 2. Daily sync of Claude.ai and ChatGPT conversations since the last successful sync.
 3. `/api/ingest` endpoint with token auth and de-duplication.
 
-**Round 5 — Morning digest**
+**Round 6 — Morning digest**
 1. 6:00am scheduled function processes new captures into ideas.
 2. "From yesterday's chats" section on Today.
 3. Top 3 roll-over: unfinished items offered on the next day.
 
 ### Needs Decisions
 
-- Which Google account(s) to connect. Default: the ARM account. Confirm in Round 2.
+- Which Google account(s) to connect. Default: the ARM account. Confirm in Round 3.
 - Digest time. Default: 6:00am Eastern. Confirm Justin's time zone.
+- The real project list for the grid (the reference uses examples).
+- Superlist screenshots to match the design more closely.
 
 ### Future Features
 
@@ -81,4 +84,4 @@
 
 | Date | Rounds | Key Milestones |
 |------|--------|----------------|
-| 2026-09-29 | 0 | Project defined, docs and design reference created |
+| 2026-09-29 | 0–1 | Project defined, docs and design reference created; projects grid and Superlist-inspired design |

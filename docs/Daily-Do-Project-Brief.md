@@ -1,7 +1,7 @@
 # Daily-Do — Project Brief
 
 **Last updated:** 2026-09-29
-**Status:** Foundation (Round 0). No app code yet.
+**Status:** Foundation (Rounds 0–1). No app code yet.
 **Repo:** https://github.com/justineckrich/Daily-Do
 **Working branch:** `ccr-7c764642-nrc8x3` → PR into `main`
 **Claude Code mode:** Cloud (claude.ai/code), driven from phone or desktop
@@ -24,6 +24,7 @@ One user: Justin.
 
 In order, top to bottom:
 
+0. **Projects** — a grid of buttons, three across, one per active project, wrapping to more rows as needed. Each shows the project name, color, and open-item count. Tapping one filters the page to that project and shows its next step. This keeps the macro view (everything in motion) on the same screen as the daily focus.
 1. **One Thing** — the single most important thing today.
 2. **Top 3** — three priorities. Unfinished items can roll to tomorrow.
 3. **Meetings** — today's events, pulled from Google Calendar. Read-only.
@@ -59,11 +60,12 @@ Scheduled function, 6:00am America/New_York (Netlify Scheduled Function)
 
 | Table | Key fields |
 |---|---|
+| `projects` | `id`, `name`, `color`, `position`, `status` (`active` \| `archived`), `next_step` |
 | `days` | `date` (PK), `one_thing`, `one_thing_done`, `notes` |
-| `priorities` | `id`, `date`, `position` (1–3), `text`, `done`, `rolled_from` |
+| `priorities` | `id`, `date`, `position` (1–3), `text`, `done`, `rolled_from`, `project_id` (optional) |
 | `meetings` | `id`, `date`, `google_event_id`, `starts_at`, `ends_at`, `title`, `location_or_link` (cache, refreshed from Google) |
 | `captures` | `id`, `source` (`claude` \| `chatgpt` \| `manual`), `external_id` (unique per source), `title`, `raw_text`, `conversation_at`, `ingested_at`, `processed_at` |
-| `ideas` | `id`, `capture_id`, `title`, `summary`, `next_step`, `status` (`new` \| `kept` \| `promoted` \| `dismissed`), `promoted_to_date`, `created_at` |
+| `ideas` | `id`, `capture_id`, `title`, `summary`, `next_step`, `status` (`new` \| `kept` \| `promoted` \| `dismissed`), `promoted_to_date`, `project_id` (optional, suggested by Claude), `created_at` |
 
 `captures.external_id` is unique per source so re-syncing never duplicates a conversation.
 
@@ -78,9 +80,10 @@ Scheduled function, 6:00am America/New_York (Netlify Scheduled Function)
 5. Calendar: Google Calendar, read-only scope, via Google OAuth. Account to connect is Justin's ARM Google account unless he says otherwise; the design allows adding a second calendar later.
 6. AI chat capture: Chrome extension (Manifest V3) syncing daily, plus a 6:00am scheduled digest. No server-side scraping and no stored Claude/ChatGPT passwords.
 7. Idea extraction uses the Claude API.
-8. Visual direction: new "notebook-clean" design, personal to Justin. Not ARM brand, not the Fort Work look.
+8. Visual direction: inspired by Superlist (sleek, modern, bold sans type, one vivid red accent). Personal to Justin. Not ARM brand, not the Fort Work look.
 9. Lean by default. A feature must earn its place on the Today page. Anything else goes to the parked list.
 10. Built by Justin + Claude in rounds (see Iteration Workflow).
+11. A projects grid sits at the very top of Today, above One Thing (Justin's request, 2026-09-29).
 
 ---
 
@@ -88,12 +91,12 @@ Scheduled function, 6:00am America/New_York (Netlify Scheduled Function)
 
 Source of truth: [`design/today-reference.html`](../design/today-reference.html). Match it.
 
-- **Feel:** a clean paper planner page. Quiet, lots of space, one accent.
-- **Paper:** cool off-white with a faint dot grid; dark mode is deep blue-grey paper.
-- **Ink:** near-black text; accent is fountain-pen blue, used for checks, the One Thing, and primary actions only.
-- **Type:** Young Serif for the date and section headings, Figtree for everything else, IBM Plex Mono for times and counts.
-- **Components:** checkable lines (not boxed cards) for One Thing and Top 3; a time rail for meetings; idea cards are the only bordered objects on the page; capture bar pinned to the bottom.
+- **Feel:** Superlist-inspired. Sleek, modern, lots of white space, bold headings, one vivid accent.
+- **Colors:** white background (near-black in dark mode), soft grey surfaces, near-black text, red-coral brand accent used for the One Thing card, checks, and the Capture button. Each project gets its own color dot.
+- **Type:** Inter throughout (heavy weight for the date, small uppercase labels for section headers); JetBrains Mono for times.
+- **Components:** projects as a 3-column button grid; One Thing as a solid red card; Top 3 as list rows with round checks and project tags; meetings as a time list; idea cards on grey surfaces; capture bar pinned to the bottom.
 - Light and dark mode both required.
+- Superlist's site could not be loaded from the build environment, so this is from memory. Screenshots from Justin will tighten the match.
 
 ---
 
@@ -161,7 +164,7 @@ See [Daily-Do-Current-State.md](Daily-Do-Current-State.md).
 ## Key Context for New Chat Sessions
 
 - Daily-Do is Fort Work 2.0, rebuilt lean. Resist adding Fort Work's extra screens.
-- The Today page is the product: One Thing, Top 3, Meetings, yesterday's chat ideas, Notes, capture bar.
+- The Today page is the product: Projects grid, One Thing, Top 3, Meetings, yesterday's chat ideas, Notes, capture bar.
 - The killer feature is the 6am digest of yesterday's Claude and ChatGPT chats, fed by a Chrome extension.
 - Stack: Next.js + Supabase + Netlify + Claude API + Google Calendar.
 - Read `docs/Daily-Do-Current-State.md` for where things stand, and `docs/Daily-Do-Rules.md` before changing anything.
