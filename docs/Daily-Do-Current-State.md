@@ -18,7 +18,7 @@
 - Repo created, `main` initialized.
 - Project Brief, Current State, Rules, CLAUDE.md, dev skill.
 - Today page design reference (`design/today-reference.html`) with sample data.
-- Round 1: projects grid at the top of Today; restyled to a Superlist-inspired look.
+- Round 1: projects grid at the top of Today; restyled to match Justin's Superlist screenshots (dark).
 
 ## What's In Progress
 
@@ -65,7 +65,6 @@
 - Which Google account(s) to connect. Default: the ARM account. Confirm in Round 3.
 - Digest time. Default: 6:00am Eastern. Confirm Justin's time zone.
 - The real project list for the grid (the reference uses examples).
-- Superlist screenshots to match the design more closely.
 
 ### Future Features
 

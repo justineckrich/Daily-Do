@@ -80,7 +80,7 @@ Scheduled function, 6:00am America/New_York (Netlify Scheduled Function)
 5. Calendar: Google Calendar, read-only scope, via Google OAuth. Account to connect is Justin's ARM Google account unless he says otherwise; the design allows adding a second calendar later.
 6. AI chat capture: Chrome extension (Manifest V3) syncing daily, plus a 6:00am scheduled digest. No server-side scraping and no stored Claude/ChatGPT passwords.
 7. Idea extraction uses the Claude API.
-8. Visual direction: inspired by Superlist (sleek, modern, bold sans type, one vivid red accent). Personal to Justin. Not ARM brand, not the Fort Work look.
+8. Visual direction: Superlist look, matched from Justin's screenshots (dark panels, heavy headings, red-coral accent). Personal to Justin. Not ARM brand, not the Fort Work look.
 9. Lean by default. A feature must earn its place on the Today page. Anything else goes to the parked list.
 10. Built by Justin + Claude in rounds (see Iteration Workflow).
 11. A projects grid sits at the very top of Today, above One Thing (Justin's request, 2026-09-29).
@@ -91,12 +91,11 @@ Scheduled function, 6:00am America/New_York (Netlify Scheduled Function)
 
 Source of truth: [`design/today-reference.html`](../design/today-reference.html). Match it.
 
-- **Feel:** Superlist-inspired. Sleek, modern, lots of white space, bold headings, one vivid accent.
-- **Colors:** white background (near-black in dark mode), soft grey surfaces, near-black text, red-coral brand accent used for the One Thing card, checks, and the Capture button. Each project gets its own color dot.
-- **Type:** Inter throughout (heavy weight for the date, small uppercase labels for section headers); JetBrains Mono for times.
-- **Components:** projects as a 3-column button grid; One Thing as a solid red card; Top 3 as list rows with round checks and project tags; meetings as a time list; idea cards on grey surfaces; capture bar pinned to the bottom.
-- Light and dark mode both required.
-- Superlist's site could not be loaded from the build environment, so this is from memory. Screenshots from Justin will tighten the match.
+- **Feel:** Superlist, matched from Justin's screenshots (2026-09-29). Dark, sleek, modern.
+- **Colors:** near-black frame, dark navy-charcoal panel with rounded corners, lighter raised surfaces for selected items. White text, muted grey-lavender for secondary text. Superlist red-coral brand accent (checks, One Thing marker, selected-project bar, Capture button). Yellow wavy divider under the day title. Small colored chips for sources (green Claude, blue ChatGPT).
+- **Type:** Plus Jakarta Sans. Extra-bold, tight headline for the day; semibold section headings with grey count badges; medium task titles; small grey meta lines with icons (date, subtasks, project).
+- **Components:** projects as emoji + name list items in a 3-column grid, selected one gets a raised background and red edge bar; One Thing as a raised row with a red left bar; tasks as round thin-outline checks with a meta line; idea rows with a dashed marker and purple dot; capture as a pill with a round red send button.
+- Dark-only for now, like the screenshots. A light theme can come later if wanted.
 
 ---
 
