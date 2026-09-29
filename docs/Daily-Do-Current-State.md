@@ -7,9 +7,9 @@
 
 ## Round State
 
-- **Last round shipped:** 1 (projects grid + Superlist-inspired redesign of the reference)
-- **Next round ready:** 2 (app skeleton + Today page with saving)
-- **Total rounds shipped:** 2 (0–1, docs and design only)
+- **Last round shipped:** 2 (app skeleton, login, Today page with saving). Built and smoke-tested locally; not yet deployed.
+- **Next round ready:** 3 (meetings from Google Calendar)
+- **Total rounds shipped:** 3
 
 ---
 
@@ -20,9 +20,11 @@
 - Today page design reference (`design/today-reference.html`) with sample data.
 - Round 1: projects grid at the top of Today; restyled to match Justin's Superlist screenshots (dark).
 
+- Round 2: Next.js 16 app. Email sign-in (link or 6-digit code) limited to `ALLOWED_EMAIL`. Today page with projects grid (add, next step, archive, open counts), One Thing, Top 3 (with project tags), Notes, day navigation, autosave. Capture bar saves raw captures. Meetings and chat ideas show empty states. PWA manifest and icon. Schema in `supabase/migrations/0001_init.sql`.
+
 ## What's In Progress
 
-- Justin reviewing the design reference.
+- First deploy: run the SQL in Supabase, connect the repo to Netlify, set env vars, set Supabase auth redirect URLs.
 
 ## What's Still Needed
 
@@ -33,13 +35,6 @@
 ## Backlog (Prioritized)
 
 ### Ready to Build
-
-**Round 2 — Skeleton + Today page**
-1. Next.js + TypeScript + Tailwind app, design tokens from the reference.
-2. Supabase schema (`projects`, `days`, `priorities`, `meetings`, `captures`, `ideas`) and magic-link login limited to Justin's email.
-3. Today page: projects grid, One Thing, Top 3, Notes, all saving automatically.
-4. Projects: add, rename, color, archive; tag Top 3 items to a project. Past days navigation.
-5. Deploy to Netlify; installable on the phone home screen.
 
 **Round 3 — Meetings from Google Calendar**
 1. Google OAuth (read-only calendar scope), connect button in Settings.
@@ -63,6 +58,7 @@
 ### Needs Decisions
 
 - Which Google account(s) to connect. Default: the ARM account. Confirm in Round 3.
+- Turn off new sign-ups in Supabase after Justin's first sign-in (Authentication → Sign In / Providers).
 - Digest time. Default: 6:00am Eastern. Confirm Justin's time zone.
 - The real project list for the grid (the reference uses examples).
 
@@ -75,7 +71,8 @@
 
 ## Known Issues
 
-- None yet. Known risk: the extension depends on unofficial Claude.ai and ChatGPT web endpoints and will need fixes when those sites change.
+- Supabase is not reachable from the Claude Code cloud environment (egress blocked), so live database testing happens on the Netlify deploy.
+- Known risk: the extension depends on unofficial Claude.ai and ChatGPT web endpoints and will need fixes when those sites change.
 
 ---
 
@@ -83,4 +80,4 @@
 
 | Date | Rounds | Key Milestones |
 |------|--------|----------------|
-| 2026-09-29 | 0–1 | Project defined, docs and design reference created; projects grid and Superlist-inspired design |
+| 2026-09-29 | 0–2 | Project defined, docs and design reference created; projects grid and Superlist design; app skeleton with login and Today page |
