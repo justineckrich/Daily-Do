@@ -33,13 +33,13 @@ export default function Today() {
   const [saveState, setSaveState] = useState("");
   const [loading, setLoading] = useState(true);
 
-  const timers = useRef(new Map<string, ReturnType<typeof setTimeout>>());
+  const timers = useRef(new Map<string, { id: ReturnType<typeof setTimeout>; fn: () => void }>());
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const say = useCallback((msg: string) => {
+  const say = useCallback((msg: string, ms = 2500) => {
     setToast(msg);
     if (toastTimer.current) clearTimeout(toastTimer.current);
-    toastTimer.current = setTimeout(() => setToast(""), 2500);
+    toastTimer.current = setTimeout(() => setToast(""), ms);
   }, []);
 
   const run = useCallback(
@@ -48,7 +48,7 @@ export default function Today() {
       const { error } = await op();
       if (error) {
         setSaveState("");
-        say(`Couldn't save ${label}. Check your connection and try again.`);
+        say(`Couldn't save ${label}: ${error.message}`, 10000);
       } else {
         setSaveState("Saved");
       }
@@ -58,12 +58,40 @@ export default function Today() {
 
   // Debounce writes per key so typing doesn't send a request per keystroke.
   const later = useCallback((key: string, fn: () => void) => {
-    const t = timers.current.get(key);
-    if (t) clearTimeout(t);
-    timers.current.set(key, setTimeout(() => {
+    const pending = timers.current.get(key);
+    if (pending) clearTimeout(pending.id);
+    const id = setTimeout(() => {
       timers.current.delete(key);
       fn();
-    }, SAVE_DELAY));
+    }, SAVE_DELAY);
+    timers.current.set(key, { id, fn });
+  }, []);
+
+  // Drop a pending debounced save (the caller is about to save right away).
+  const cancel = (key: string) => {
+    const pending = timers.current.get(key);
+    if (pending) clearTimeout(pending.id);
+    timers.current.delete(key);
+  };
+
+  // Save anything still waiting on the debounce when the page is refreshed, closed, or backgrounded.
+  useEffect(() => {
+    const flushAll = () => {
+      for (const [key, pending] of timers.current) {
+        clearTimeout(pending.id);
+        timers.current.delete(key);
+        pending.fn();
+      }
+    };
+    const onHide = () => {
+      if (document.visibilityState === "hidden") flushAll();
+    };
+    window.addEventListener("pagehide", flushAll);
+    document.addEventListener("visibilitychange", onHide);
+    return () => {
+      window.removeEventListener("pagehide", flushAll);
+      document.removeEventListener("visibilitychange", onHide);
+    };
   }, []);
 
   const openItemsQuery = useCallback(
@@ -92,7 +120,8 @@ export default function Today() {
         openItemsQuery(),
       ]);
       if (cancelled) return;
-      if (dayRes.error || priRes.error || projRes.error) say("Couldn't load your day. Pull to refresh or try again.");
+      const loadError = dayRes.error ?? priRes.error ?? projRes.error;
+      if (loadError) say(`Couldn't load your day: ${loadError.message}`, 10000);
       setDay((dayRes.data as Day) ?? EMPTY_DAY);
       const rows = (priRes.data as Priority[]) ?? [];
       setPriorities(emptyPriorities().map((p) => rows.find((r) => r.position === p.position) ?? p));
@@ -112,8 +141,7 @@ export default function Today() {
     const save = () =>
       run("your day", () => supabase.from("days").upsert({ date, ...next, updated_at: new Date().toISOString() }, { onConflict: "user_id,date" }));
     if (immediate) {
-      const pending = timers.current.get(`day:${date}`);
-      if (pending) clearTimeout(pending);
+      cancel(`day:${date}`);
       save();
     } else later(`day:${date}`, save);
   };
@@ -135,8 +163,7 @@ export default function Today() {
       ).then(loadOpenItems);
     };
     if (immediate) {
-      const pending = timers.current.get(`pri:${date}:${position}`);
-      if (pending) clearTimeout(pending);
+      cancel(`pri:${date}:${position}`);
       save();
     } else later(`pri:${date}:${position}`, save);
   };
