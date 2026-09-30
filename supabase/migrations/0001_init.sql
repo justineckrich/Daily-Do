@@ -1,7 +1,7 @@
--- Daily-Do schema. Run once in the Supabase SQL Editor.
+-- Daily-Do schema. Safe to run more than once in the Supabase SQL Editor.
 -- Every table is private to the signed-in user via row level security.
 
-create table public.projects (
+create table if not exists public.projects (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null default auth.uid() references auth.users on delete cascade,
   name text not null,
@@ -12,7 +12,7 @@ create table public.projects (
   created_at timestamptz not null default now()
 );
 
-create table public.days (
+create table if not exists public.days (
   user_id uuid not null default auth.uid() references auth.users on delete cascade,
   date date not null,
   one_thing text not null default '',
@@ -22,7 +22,7 @@ create table public.days (
   primary key (user_id, date)
 );
 
-create table public.priorities (
+create table if not exists public.priorities (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null default auth.uid() references auth.users on delete cascade,
   date date not null,
@@ -35,7 +35,7 @@ create table public.priorities (
   unique (user_id, date, position)
 );
 
-create table public.meetings (
+create table if not exists public.meetings (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null default auth.uid() references auth.users on delete cascade,
   date date not null,
@@ -48,7 +48,7 @@ create table public.meetings (
   unique (user_id, google_event_id, date)
 );
 
-create table public.captures (
+create table if not exists public.captures (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null default auth.uid() references auth.users on delete cascade,
   source text not null check (source in ('claude', 'chatgpt', 'manual')),
@@ -61,7 +61,7 @@ create table public.captures (
   unique (user_id, source, external_id)
 );
 
-create table public.ideas (
+create table if not exists public.ideas (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null default auth.uid() references auth.users on delete cascade,
   capture_id uuid references public.captures on delete set null,
@@ -74,17 +74,26 @@ create table public.ideas (
   created_at timestamptz not null default now()
 );
 
-create index on public.priorities (user_id, project_id) where not done;
-create index on public.ideas (user_id, status);
+create index if not exists priorities_open_idx on public.priorities (user_id, project_id) where not done;
+create index if not exists ideas_status_idx on public.ideas (user_id, status);
 
-do $$
-declare t text;
-begin
-  foreach t in array array['projects', 'days', 'priorities', 'meetings', 'captures', 'ideas'] loop
-    execute format('alter table public.%I enable row level security', t);
-    execute format(
-      'create policy "own rows" on public.%I for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid())',
-      t
-    );
-  end loop;
-end $$;
+alter table public.projects enable row level security;
+alter table public.days enable row level security;
+alter table public.priorities enable row level security;
+alter table public.meetings enable row level security;
+alter table public.captures enable row level security;
+alter table public.ideas enable row level security;
+
+drop policy if exists "own rows" on public.projects;
+drop policy if exists "own rows" on public.days;
+drop policy if exists "own rows" on public.priorities;
+drop policy if exists "own rows" on public.meetings;
+drop policy if exists "own rows" on public.captures;
+drop policy if exists "own rows" on public.ideas;
+
+create policy "own rows" on public.projects for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+create policy "own rows" on public.days for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+create policy "own rows" on public.priorities for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+create policy "own rows" on public.meetings for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+create policy "own rows" on public.captures for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+create policy "own rows" on public.ideas for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
