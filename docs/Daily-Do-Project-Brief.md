@@ -76,7 +76,7 @@ Scheduled function, 6:00am America/New_York (Netlify Scheduled Function)
 1. Single user. No teams, sharing, or multi-tenant features.
 2. Phone-first web app, installable to the home screen (PWA). Also works on desktop.
 3. Stack: Next.js (App Router) + TypeScript + Tailwind CSS, Supabase (Postgres + auth), hosted on Netlify.
-4. Login: Supabase email sign-in (magic link or 6-digit code, the code works inside the home-screen app). Only `ALLOWED_EMAIL` (an env var, not in the repo) is sent a sign-in email. Every table uses row level security on `user_id = auth.uid()`.
+4. Login: Supabase email sign-in by magic link (implicit flow, so the link works even if opened in a different browser). Only `ALLOWED_EMAIL` (an env var, not in the repo) is sent a sign-in email. Every table uses row level security on `user_id = auth.uid()`.
 5. Calendar: Google Calendar, read-only scope, via Google OAuth. Account to connect is Justin's ARM Google account unless he says otherwise; the design allows adding a second calendar later.
 6. AI chat capture: Chrome extension (Manifest V3) syncing daily, plus a 6:00am scheduled digest. No server-side scraping and no stored Claude/ChatGPT passwords.
 7. Idea extraction uses the Claude API.
@@ -142,8 +142,8 @@ supabase/migrations/0001_init.sql  database schema + row level security
 src/proxy.ts                       session refresh + redirect to /login
 src/app/page.tsx                   Today page (renders components/Today.tsx)
 src/app/login/                     sign-in screen
-src/app/api/login, api/verify      send sign-in email, verify 6-digit code
-src/app/auth/callback              magic-link landing
+src/app/api/login                  send sign-in email
+src/app/auth/callback              magic-link landing (reads tokens from the URL hash)
 src/components/Today.tsx           the Today page UI and autosave
 src/lib/supabase/                  browser and server Supabase clients
 src/lib/dates.ts                   local-date helpers

@@ -1,53 +1,39 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function LoginForm({ linkError }: { linkError: boolean }) {
-  const router = useRouter();
   const [email, setEmail] = useState("");
-  const [code, setCode] = useState("");
   const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState(
-    linkError ? "That link expired or was opened in a different browser. Send a new one." : "",
+    linkError ? "That sign-in link didn't work. It may have expired. Send a new one." : "",
   );
 
-  async function post(path: string, body: object) {
-    setBusy(true);
-    setMessage("");
-    try {
-      const res = await fetch(path, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Something went wrong. Try again.");
-      return data;
-    } finally {
-      setBusy(false);
+  // If Supabase sent the sign-in tokens here instead of /auth/callback, pass them along.
+  useEffect(() => {
+    if (window.location.hash.includes("access_token")) {
+      window.location.replace(`/auth/callback${window.location.hash}`);
     }
-  }
+  }, []);
 
   async function sendLink(e: React.FormEvent) {
     e.preventDefault();
+    setBusy(true);
+    setMessage("");
     try {
-      await post("/api/login", { email });
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Something went wrong. Try again.");
       setSent(true);
     } catch (err) {
       setMessage((err as Error).message);
-    }
-  }
-
-  async function verify(e: React.FormEvent) {
-    e.preventDefault();
-    try {
-      await post("/api/verify", { email, token: code });
-      router.replace("/");
-      router.refresh();
-    } catch (err) {
-      setMessage((err as Error).message);
+    } finally {
+      setBusy(false);
     }
   }
 
@@ -57,7 +43,7 @@ export default function LoginForm({ linkError }: { linkError: boolean }) {
         <h1 className="title">Daily-Do</h1>
         {!sent ? (
           <form onSubmit={sendLink} className="stack">
-            <p className="muted">Sign in with your email. We&apos;ll send you a link and a code.</p>
+            <p className="muted">Sign in with your email. We&apos;ll send you a sign-in link.</p>
             <input
               id="email"
               type="email"
@@ -73,26 +59,12 @@ export default function LoginForm({ linkError }: { linkError: boolean }) {
             </button>
           </form>
         ) : (
-          <form onSubmit={verify} className="stack">
-            <p className="muted">
-              Check your email. Tap the link on this device, or type the code from the email here.
-            </p>
-            <input
-              id="code"
-              inputMode="numeric"
-              autoComplete="one-time-code"
-              placeholder="6-digit code"
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              className="field"
-            />
-            <button className="btn primary" disabled={busy || code.trim().length < 6}>
-              {busy ? "Checking…" : "Sign in"}
-            </button>
+          <div className="stack">
+            <p className="muted">Check your email and tap the sign-in link. It opens Daily-Do and signs you in.</p>
             <button type="button" className="btn" onClick={() => setSent(false)}>
-              Use a different email
+              Send it again
             </button>
-          </form>
+          </div>
         )}
         {message && <p className="error">{message}</p>}
       </div>
