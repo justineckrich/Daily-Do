@@ -11,7 +11,8 @@ Project docs live in [`docs/`](docs/). The visual reference is [`design/today-re
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY` (the publishable key)
    - `ALLOWED_EMAIL` (the only email allowed to sign in)
-3. **Supabase auth URLs:** Authentication → URL Configuration. Set Site URL to the Netlify URL and add `https://<site>.netlify.app/auth/callback` to Redirect URLs.
+3. **Your login:** Supabase → Authentication → Users → Add user → Create new user. Use `ALLOWED_EMAIL`, pick a password, and check **Auto Confirm User**.
+4. **Supabase auth URLs** (for the email-link fallback): Authentication → URL Configuration. Set Site URL to the Netlify URL and add `https://<site>.netlify.app/auth/callback` to Redirect URLs.
 
 ## Develop
 
