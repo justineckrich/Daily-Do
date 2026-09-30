@@ -1,13 +1,13 @@
 # Daily-Do — Current State
 
-**Last updated:** 2026-09-29
+**Last updated:** 2026-09-30
 **Update this doc at the end of every session.**
 
 ---
 
 ## Round State
 
-- **Last round shipped:** 2 (app skeleton, login, Today page with saving). Built and smoke-tested locally; not yet deployed.
+- **Last round shipped:** 2 (app skeleton, login, Today page with saving). Live at https://daily-do-nm5o.netlify.app (auto-deploys from `main`).
 - **Next round ready:** 3 (meetings from Google Calendar)
 - **Total rounds shipped:** 3
 
@@ -20,11 +20,14 @@
 - Today page design reference (`design/today-reference.html`) with sample data.
 - Round 1: projects grid at the top of Today; restyled to match Justin's Superlist screenshots (dark).
 
-- Round 2: Next.js 16 app. Email sign-in (link or 6-digit code) limited to `ALLOWED_EMAIL`. Today page with projects grid (add, next step, archive, open counts), One Thing, Top 3 (with project tags), Notes, day navigation, autosave. Capture bar saves raw captures. Meetings and chat ideas show empty states. PWA manifest and icon. Schema in `supabase/migrations/0001_init.sql`.
+- Round 2: Next.js 16 app. Password sign-in (with an email-link fallback) limited to `ALLOWED_EMAIL`. Today page with projects grid (add, next step, archive, open counts), One Thing, Top 3 (with project tags), Notes, day navigation, autosave. Capture bar saves raw captures. Meetings and chat ideas show empty states. PWA manifest and icon. Schema in `supabase/migrations/0001_init.sql`.
+
+- Deployed: Supabase schema run, Netlify connected to GitHub, env vars set, Justin's user created.
+- Fixes after deploy: sign-in moved to password (Supabase's free email limit is ~2/hour); autosave now flushes on refresh/close and shows the real error message if a save fails.
 
 ## What's In Progress
 
-- First deploy: run the SQL in Supabase, connect the repo to Netlify, set env vars, set Supabase auth redirect URLs.
+- Confirm One Thing / Top 3 / Notes survive a refresh on the live site. If a save error mentions permissions, run the `grant` SQL in the README.
 
 ## What's Still Needed
 

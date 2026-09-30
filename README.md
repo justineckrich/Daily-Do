@@ -14,6 +14,15 @@ Project docs live in [`docs/`](docs/). The visual reference is [`design/today-re
 3. **Your login:** Supabase → Authentication → Users → Add user → Create new user. Use `ALLOWED_EMAIL`, pick a password, and check **Auto Confirm User**.
 4. **Supabase auth URLs** (for the email-link fallback): Authentication → URL Configuration. Set Site URL to the Netlify URL and add `https://<site>.netlify.app/auth/callback` to Redirect URLs.
 
+## Troubleshooting
+
+If the app says "Couldn't save … permission denied", run this in the Supabase SQL Editor:
+
+```sql
+grant usage on schema public to authenticated;
+grant select, insert, update, delete on public.projects, public.days, public.priorities, public.meetings, public.captures, public.ideas to authenticated;
+```
+
 ## Develop
 
 ```
