@@ -1,0 +1,2426 @@
+<title>Daily Do Do</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+<style>
+/* Layout: Superlist-style dark panel on a darker frame, with a sidebar of lists. Today opens with the heavy day title,
+   a wavy divider, One Thing as a raised row, Top 3, meetings, then what else is on today. Deliberately dark-only. */
+:root {
+  --frame: #15161d;
+  --panel: #1f202b;
+  --raise: #2a2b38;
+  --raise-2: #343545;
+  --line: #2f3040;
+  --ink: #f4f4f7;
+  --ink-soft: #9092a6;
+  --ink-faint: #5e6072;
+  --brand: #f9503a;
+  --brand-soft: #ff7a66;
+  --wave: #dcd35c;
+  --ok: #1fbf75;
+  --s-gmail: #f27a6b;
+  --s-slack: #c792ea;
+  --s-asana: #f06a99;
+  --s-ticktick: #4f8ef7;
+  --s-fellow: #3fc1a5;
+  --s-claude: #e0925f;
+  --s-project: #dcd35c;
+  --font: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --side-w: 232px;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  background: var(--frame); color: var(--ink); font-family: var(--font);
+  font-size: 16px; line-height: 1.45; padding-inline: 16px; padding-block: 12px 40px;
+}
+button, input, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; border-radius: 6px; }
+svg.i { width: 13px; height: 13px; flex: none; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+/* Shell: sidebar + panel */
+.shell { max-width: 1000px; margin: 0 auto; display: grid; grid-template-columns: var(--side-w) minmax(0, 1fr); gap: 16px; align-items: start; }
+.shell.collapsed { grid-template-columns: minmax(0, 1fr); max-width: 680px; }
+.shell.collapsed .side { display: none; }
+.side { position: sticky; top: calc(12px + env(safe-area-inset-top, 0px)); display: flex; flex-direction: column; gap: 18px; padding: 16px 8px; max-height: calc(100dvh - 24px); overflow: auto; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 16px; letter-spacing: -0.01em; padding: 0 10px; }
+.brand .mark { width: 22px; height: 22px; border-radius: 7px; background: var(--brand); display: grid; place-items: center; font-size: 12px; }
+nav.lists { display: grid; gap: 2px; }
+.nav { display: flex; align-items: center; gap: 10px; border: 0; background: transparent; border-radius: 10px; padding: 8px 10px; text-align: left; font-size: 14.5px; font-weight: 600; color: var(--ink-soft); }
+.nav svg { width: 17px; height: 17px; flex: none; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.nav:hover { background: var(--panel); color: var(--ink); }
+.nav[aria-current="page"] { background: var(--panel); color: var(--ink); box-shadow: inset 3px 0 0 var(--brand); }
+.nav .n { margin-left: auto; font-size: 12px; font-variant-numeric: tabular-nums; color: var(--ink-faint); font-weight: 600; }
+.nav .n.hot { color: var(--ink); background: var(--brand); border-radius: 999px; padding: 0 7px; }
+.navsep { height: 1px; background: var(--line); margin: 6px 10px; }
+.sidefoot { margin-top: auto; display: grid; gap: 10px; padding: 0 10px; }
+.sidefoot .lbl { font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-faint); }
+.scrim { display: none; }
+
+.panel {
+  min-width: 0; background: var(--panel); border-radius: 20px;
+  padding: 16px 18px 28px; display: flex; flex-direction: column; gap: 28px;
+}
+@media (min-width: 560px) { body { padding-inline: 24px; } .panel { padding: 20px 36px 36px; } }
+.topline { display: flex; align-items: center; gap: 10px; margin-bottom: -12px; }
+.burger { width: 36px; height: 36px; border-radius: 10px; border: 0; background: var(--raise); color: var(--ink-soft); display: grid; place-items: center; flex: none; }
+.burger:hover { color: var(--ink); background: var(--raise-2); }
+.burger svg { width: 18px; height: 18px; stroke: currentColor; stroke-width: 2; stroke-linecap: round; fill: none; }
+
+/* Title */
+header.day { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+h1 { font-size: clamp(34px, 9vw, 46px); line-height: 1.02; font-weight: 800; letter-spacing: -0.035em; margin: 0; text-wrap: balance; }
+.sub { font-size: 15px; color: var(--ink-soft); margin-top: 10px; font-variant-numeric: tabular-nums; }
+.sub b { color: var(--brand); font-weight: 700; }
+.round-btns { display: flex; gap: 6px; padding-top: 6px; }
+.round-btns button { width: 34px; height: 34px; border-radius: 50%; border: 0; background: var(--raise); color: var(--ink-soft); font-size: 16px; display: grid; place-items: center; }
+.round-btns button:disabled { opacity: .35; cursor: default; }
+.round-btns .refresh { width: auto; border-radius: 999px; padding: 0 13px; font-size: 13px; font-weight: 700; gap: 6px; display: inline-flex; align-items: center; color: var(--ink); }
+.round-btns .refresh:hover { background: var(--raise-2); }
+.round-btns .refresh:disabled { opacity: .7; }
+.donetoday { font-size: 13px; color: var(--ink-faint); margin: 6px 0 0; }
+.donetoday b { color: var(--ink-soft); font-weight: 600; }
+.titlewrap { display: flex; flex-direction: column; gap: 14px; }
+.wave { display: block; width: min(100%, 420px); height: 14px; }
+.brief { font-size: 15px; color: var(--ink-soft); margin: 0; max-width: 60ch; }
+.planbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 13px; color: var(--ink-faint); }
+.planbar:empty { display: none; }
+.planbar .sep { opacity: .6; }
+.linkbtn { background: none; border: 0; padding: 0; color: var(--ink-soft); font-weight: 600; font-size: 13px; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--ink-faint); }
+.linkbtn:hover { color: var(--ink); }
+.linkbtn.warn { color: var(--brand-soft); }
+
+/* Sections */
+section { display: flex; flex-direction: column; }
+h2 { font-size: 19px; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 4px; display: flex; align-items: baseline; gap: 10px; }
+h2 .count { font-size: 12px; font-weight: 600; color: var(--ink-soft); background: var(--raise); border-radius: 6px; padding: 1px 7px; font-variant-numeric: tabular-nums; }
+
+.task { display: flex; gap: 14px; padding: 11px 0; align-items: flex-start; }
+.check {
+  flex: none; width: 21px; height: 21px; margin-top: 2px; border-radius: 50%;
+  border: 1.6px solid var(--ink-faint); background: transparent; padding: 0; display: grid; place-items: center;
+}
+.check:hover { border-color: var(--ink-soft); }
+.check.urgent { border-color: var(--brand); }
+.check[aria-pressed="true"] { background: var(--brand); border-color: var(--brand); }
+.check[aria-pressed="true"]::after { content: ""; width: 8px; height: 4.5px; border-left: 2px solid var(--ink); border-bottom: 2px solid var(--ink); transform: translateY(-1px) rotate(-45deg); }
+.body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.body input.text { font-weight: 500; background: transparent; border: 0; outline: none; padding: 0; width: 100%; text-overflow: ellipsis; }
+.body input.text::placeholder { color: var(--ink-faint); }
+.body input.text:focus { box-shadow: 0 1px 0 var(--ink-faint); }
+.task.is-done .body input.text, .loop.is-done .title { color: var(--ink-faint); text-decoration: line-through; }
+.why { font-size: 14px; color: var(--ink-soft); }
+.meta-row { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; font-size: 13px; color: var(--ink-soft); }
+.meta-row > span, .meta-row > a { display: inline-flex; align-items: center; gap: 5px; }
+.meta-row a { text-decoration: none; }
+.meta-row a:hover { color: var(--ink); text-decoration: underline; }
+.meta-row .hot { color: var(--brand-soft); font-weight: 600; }
+.src { font-weight: 600; color: var(--ink); opacity: .85; }
+.src::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--dot, var(--ink-faint)); }
+.src[data-s="Gmail"] { --dot: var(--s-gmail); } .src[data-s="Slack"] { --dot: var(--s-slack); }
+.src[data-s="Asana"] { --dot: var(--s-asana); } .src[data-s="TickTick"] { --dot: var(--s-ticktick); }
+.src[data-s="Fellow"] { --dot: var(--s-fellow); } .src[data-s="Claude"] { --dot: var(--s-claude); }
+.src[data-s="Project"] { --dot: var(--s-project); } .src[data-s="You"] { --dot: var(--ink-soft); }
+.tools { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; align-items: center; }
+.mini {
+  border: 0; background: var(--raise); color: var(--ink-soft); border-radius: 999px;
+  padding: 3px 10px; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; text-decoration: none;
+}
+.mini:hover { color: var(--ink); background: var(--raise-2); }
+.mini:disabled { opacity: .35; cursor: default; }
+.mini.primary { background: var(--brand); color: var(--ink); }
+.mini.primary:hover { background: var(--brand-soft); }
+.mini[aria-pressed="true"] { background: var(--ink); color: var(--frame); }
+.tools .lbl { font-size: 12px; color: var(--ink-faint); font-weight: 600; }
+
+/* One Thing */
+.one { background: var(--raise); border-radius: 14px; padding: 14px 16px; position: relative; overflow: hidden; }
+.one::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--brand); }
+.one .kicker { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--brand); margin-bottom: 6px; }
+.one .task { padding: 0; }
+.one .body input.text { font-size: 19px; font-weight: 700; letter-spacing: -0.015em; }
+.one .placeholder { font-size: 17px; font-weight: 600; color: var(--ink-soft); display: flex; align-items: center; gap: 10px; }
+.spin { width: 14px; height: 14px; border: 2px solid var(--line); border-top-color: var(--brand); border-radius: 50%; flex: none; display: inline-block; }
+@media (prefers-reduced-motion: no-preference) { .spin { animation: sp .9s linear infinite; } }
+@keyframes sp { to { transform: rotate(360deg); } }
+
+/* List rows */
+.loop { display: flex; gap: 14px; padding: 11px 0; align-items: flex-start; border-top: 1px solid var(--line); }
+.loop:first-of-type { border-top: 0; }
+.pill { flex: none; font-size: 10.5px; font-weight: 800; letter-spacing: .02em; border-radius: 5px; padding: 0 5px; border: 1px solid transparent; font-variant-numeric: tabular-nums; }
+.p0 { background: var(--brand); color: var(--ink); }
+.p1 { border-color: var(--brand); color: var(--brand-soft); }
+.p2 { background: var(--raise); color: var(--ink-soft); }
+.p3 { border-color: var(--line); color: var(--ink-faint); }
+.loop .title { font-weight: 500; overflow-wrap: anywhere; }
+.loop .title a { text-decoration: none; }
+.loop .title a:hover { text-decoration: underline; text-decoration-color: var(--brand); }
+.act { font-size: 14px; color: var(--ink-soft); }
+.act b { color: var(--ink); font-weight: 600; }
+.new { font-size: 10.5px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--brand-soft); }
+.more { align-self: flex-start; margin-top: 6px; }
+.empty { font-size: 14px; color: var(--ink-faint); padding: 8px 0; margin: 0; }
+.detail { font-size: 14px; color: var(--ink-soft); max-width: 62ch; overflow-wrap: anywhere; }
+.hist { list-style: none; margin: 6px 0 0; padding: 0 0 0 10px; border-left: 2px solid var(--line); display: grid; gap: 3px; font-size: 13px; color: var(--ink-soft); }
+.hist b { color: var(--ink); font-weight: 600; }
+.noteform { display: flex; gap: 6px; margin-top: 6px; }
+.noteform input { flex: 1; min-width: 0; background: var(--raise); border: 0; border-radius: 8px; padding: 6px 10px; font-size: 14px; outline: none; }
+.syncerr { color: var(--brand-soft); font-weight: 600; }
+.add { display: flex; gap: 14px; align-items: center; padding: 8px 0 0; }
+.add .plus { width: 21px; height: 21px; border-radius: 50%; border: 1.6px dashed var(--ink-faint); display: grid; place-items: center; color: var(--ink-faint); font-size: 14px; flex: none; }
+.add input { flex: 1; min-width: 0; background: transparent; border: 0; outline: none; padding: 6px 0; font-weight: 500; }
+.add input::placeholder { color: var(--ink-faint); }
+.add input:focus { box-shadow: 0 1px 0 var(--ink-faint); }
+
+/* Meetings */
+.mt { display: grid; grid-template-columns: 74px minmax(0, 1fr) auto; gap: 12px; align-items: baseline; padding: 9px 0; border-top: 1px solid var(--line); }
+.mt:first-of-type { border-top: 0; }
+.mt .tm { font-size: 13px; color: var(--ink-soft); font-variant-numeric: tabular-nums; font-weight: 600; }
+.mt .tt { font-weight: 500; overflow-wrap: anywhere; }
+.mt .tt a { text-decoration: none; }
+.mt .tt a:hover { text-decoration: underline; }
+.mt .who { font-size: 13px; color: var(--ink-soft); }
+.mt.past { opacity: .45; }
+.mt.now .tm { color: var(--brand-soft); }
+.mt .join { font-size: 12px; font-weight: 700; text-decoration: none; background: var(--raise); padding: 3px 10px; border-radius: 999px; color: var(--ink); }
+.mt .join:hover { background: var(--brand); }
+.dayh { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-faint); margin: 14px 0 2px; }
+.dayh:first-child { margin-top: 0; }
+
+/* Priority engine: lanes, mix bar, caps (values from the Round spec) */
+.lane-chip { display:inline-flex; align-items:center; height:20px; padding:0 8px; border-radius:10px; font-size:11px; font-weight:600; letter-spacing:.02em; text-transform:uppercase; cursor:pointer; border:0; font-family:inherit; }
+.lane-acquire    { background:rgba(34,197,94,.15);  color:#4ADE80; }
+.lane-retention  { background:rgba(59,130,246,.15); color:#60A5FA; }
+.lane-management { background:rgba(245,158,11,.15); color:#FBBF24; }
+.lane-life       { background:rgba(156,163,175,.15); color:#D1D5DB; }
+.lane-none       { background:transparent; color:var(--ink-faint); box-shadow: inset 0 0 0 1px var(--line); }
+.mix { display:grid; gap:8px; }
+.mix-wrap { position:relative; }
+.mix-bar { display:flex; height:8px; border-radius:4px; overflow:hidden; background:rgba(255,255,255,.06); }
+.mix-bar > span { height:100%; transition:width .3s ease; }
+.mix-acquire { background:#22C55E; } .mix-retention { background:#3B82F6; } .mix-management { background:#F59E0B; }
+.mix-target-tick { position:absolute; top:-3px; width:2px; height:14px; background:#FFFFFF; opacity:.6; }
+.mix-label { font-size:13px; color:var(--ink-soft); margin:0; }
+.cap-count { font-size:12px; font-variant-numeric:tabular-nums; color:#9CA3AF; font-weight:500; letter-spacing:0; }
+.cap-count.full { color:#F87171; font-weight:600; }
+.scale { display:inline-flex; align-items:center; gap:4px; }
+.scale .mini { min-width:26px; justify-content:center; }
+.settings { display:grid; gap:8px; padding:12px; background:var(--panel); border-radius:12px; }
+.settings label { display:flex; align-items:center; gap:8px; font-size:13px; color:var(--ink-soft); }
+.settings input { width:64px; background:var(--raise); border:1px solid var(--line); border-radius:8px; padding:5px 8px; font-size:14px; outline:none; }
+.gear { display:inline-flex; align-items:center; gap:6px; border:0; background:transparent; color:var(--ink-faint); font-size:12px; padding:4px 8px; margin:0 -8px; border-radius:8px; }
+.gear:hover { background:var(--panel); color:var(--ink); }
+.gear svg { width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:1.8; }
+.lifehead { display:flex; align-items:center; gap:10px; width:100%; background:none; border:0; padding:0; text-align:left; }
+@media (prefers-reduced-motion: reduce) { .mix-bar > span { transition:none; } }
+
+/* Search */
+.searchbox { position: relative; padding: 0 2px; }
+.searchbox input { width: 100%; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 8px 30px 8px 32px; font-size: 14px; outline: none; }
+.searchbox input:focus { border-color: var(--ink-faint); }
+.searchbox input::placeholder { color: var(--ink-faint); }
+.searchbox .mag { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; stroke: var(--ink-faint); fill: none; stroke-width: 2; stroke-linecap: round; pointer-events: none; }
+.searchbox .clear { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); border: 0; background: transparent; color: var(--ink-faint); font-size: 16px; width: 24px; height: 24px; border-radius: 6px; }
+.searchbox .clear:hover { color: var(--ink); }
+.sres { display: flex; flex-direction: column; gap: 3px; padding: 11px 0; border-top: 1px solid var(--line); }
+.sres:first-of-type { border-top: 0; }
+.sres .title { font-weight: 500; overflow-wrap: anywhere; }
+.sres .title a { text-decoration: none; }
+.sres .title a:hover { text-decoration: underline; text-decoration-color: var(--brand); }
+.sres .snip { font-size: 14px; color: var(--ink-soft); overflow-wrap: anywhere; }
+
+/* Turn into an Asana task */
+.asform { display: grid; gap: 8px; margin-top: 8px; padding: 12px; background: var(--raise); border-radius: 12px; max-width: 520px; }
+.asform label { display: grid; gap: 4px; font-size: 12px; font-weight: 600; color: var(--ink-soft); }
+.asform input, .asform select { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; font-size: 14px; outline: none; color: var(--ink); min-width: 0; }
+.asform input:focus, .asform select:focus { border-color: var(--ink-faint); }
+.asform .row2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
+@media (max-width: 420px) { .asform .row2 { grid-template-columns: minmax(0, 1fr); } }
+.asform .err { font-size: 13px; color: var(--brand-soft); font-weight: 600; }
+
+/* Projects */
+.projrow { border-top: 1px solid var(--line); }
+.projrow:first-of-type { border-top: 0; }
+.projhead { display: flex; gap: 12px; align-items: center; padding: 12px 0; width: 100%; background: none; border: 0; text-align: left; }
+.projhead .nm { font-weight: 700; font-size: 16px; }
+.projhead .st { font-size: 13px; color: var(--ink-soft); display: flex; gap: 10px; flex-wrap: wrap; margin-top: 2px; font-variant-numeric: tabular-nums; }
+.projhead .st .hot { color: var(--brand-soft); font-weight: 600; }
+.projhead .chev { margin-left: auto; color: var(--ink-faint); font-size: 18px; }
+.projbody { padding: 0 0 10px 16px; border-left: 2px solid var(--line); margin-left: 4px; }
+
+textarea {
+  width: 100%; min-height: 120px; resize: vertical; color: var(--ink);
+  background: transparent; border: 0; padding: 4px 0; outline: none; line-height: 1.6;
+}
+textarea::placeholder { color: var(--ink-faint); }
+
+.notice { background: var(--raise); border-radius: 12px; padding: 12px 14px; font-size: 14px; color: var(--ink); display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
+.notice.bad { box-shadow: inset 3px 0 0 var(--brand); }
+#notices { display: grid; gap: 8px; }
+.sources { display: grid; gap: 5px; font-size: 12px; color: var(--ink-faint); }
+.sources span { display: inline-flex; align-items: center; gap: 6px; }
+.sources button { display: flex; align-items: center; gap: 6px; width: calc(100% + 16px); margin: 0 -8px; padding: 4px 8px; border: 0; border-radius: 8px; background: transparent; font-size: 12px; text-align: left; color: inherit; }
+.sources button:hover { background: var(--panel); color: var(--ink); }
+.sources button[aria-pressed="true"] { background: var(--panel); color: var(--ink); box-shadow: inset 3px 0 0 var(--brand); }
+.sources .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ink-faint); }
+.sources [data-s="ok"] .dot { background: var(--ok); }
+.sources [data-s="err"] { color: var(--brand-soft); }
+.sources [data-s="err"] .dot { background: var(--brand); }
+@media (prefers-reduced-motion: no-preference) { .sources [data-s="load"] .dot { animation: pulse 1.2s infinite; } }
+@keyframes pulse { 50% { opacity: .3; } }
+
+/* Capture bar: pinned to the bottom of the panel on every screen */
+.capture { position: sticky; bottom: calc(10px + env(safe-area-inset-bottom, 0px)); z-index: 20; margin-top: -8px; }
+.capture form { display: flex; gap: 8px; align-items: center; background: var(--raise); border: 1px solid var(--line); border-radius: 999px; padding: 6px 6px 6px 18px; box-shadow: 0 10px 30px rgba(0, 0, 0, .45); }
+.capture .plus { color: var(--ink-soft); font-size: 18px; line-height: 1; }
+.capture input { flex: 1; min-width: 0; border: 0; background: transparent; outline: none; font-size: 15px; padding: 6px 0; }
+.capture input::placeholder { color: var(--ink-soft); }
+.capture .send { flex: none; width: 36px; height: 36px; border-radius: 50%; border: 0; background: var(--brand); color: var(--ink); display: grid; place-items: center; }
+.capture .send:hover { background: var(--brand-soft); }
+.capture .send:disabled { opacity: .7; cursor: default; }
+.capture .send svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.newproj { display: flex; gap: 8px; align-items: center; margin: 4px 0 6px; }
+.newproj input { flex: 1; min-width: 0; background: var(--raise); border: 0; border-radius: 8px; padding: 7px 10px; font-size: 14px; outline: none; }
+
+.toast {
+  position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(80px + env(safe-area-inset-bottom, 0px)); z-index: 60;
+  background: var(--ink); color: var(--frame); border-radius: 999px; padding: 8px 8px 8px 16px; max-width: calc(100% - 32px);
+  display: flex; gap: 10px; align-items: center; font-size: 14px; font-weight: 600; box-shadow: 0 10px 30px rgba(0, 0, 0, .45);
+}
+.toast span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.toast button { border: 0; background: var(--brand); color: var(--ink); border-radius: 999px; padding: 5px 12px; font-weight: 700; flex: none; }
+.toast.plain { padding-right: 16px; }
+.toast button.alt { background: transparent; color: var(--frame); box-shadow: inset 0 0 0 1.5px var(--frame); }
+.saved { font-size: 12px; color: var(--ink-faint); text-align: right; min-height: 1.2em; margin: -14px 0 0; }
+
+@media (max-width: 899px) {
+  .shell, .shell.collapsed { grid-template-columns: minmax(0, 1fr); max-width: 680px; }
+  .shell .side, .shell.collapsed .side {
+    display: flex; position: fixed; left: 0; top: 0; bottom: 0; max-height: none; width: min(82vw, 260px); z-index: 50;
+    background: var(--frame); padding: calc(18px + env(safe-area-inset-top, 0px)) 10px 18px; transform: translateX(-102%); transition: transform .2s ease;
+  }
+  .shell.open .side { transform: none; box-shadow: 0 0 40px rgba(0, 0, 0, .5); }
+  .shell.open .scrim { display: block; position: fixed; inset: 0; background: rgba(0, 0, 0, .45); z-index: 45; }
+}
+@media (max-width: 420px) {
+  .mt { grid-template-columns: 58px minmax(0, 1fr); }
+  .mt > .meta-row { grid-column: 2; }
+}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"/></symbol>
+  <symbol id="i-out" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c1.2-3.6 4-5 7-5s5.8 1.4 7 5"/></symbol>
+</svg>
+
+<div class="shell" id="shell">
+  <aside class="side" id="side" aria-label="Lists">
+    <div class="brand"><span class="mark">✓</span>Daily Do Do</div>
+    <form class="searchbox" id="searchForm" role="search">
+      <svg class="mag" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg>
+      <input type="search" id="search" placeholder="Search everything" aria-label="Search this page, Slack, Gmail and Asana" autocomplete="off" data-bwignore="true" data-lpignore="true" data-1p-ignore="true" data-form-type="other">
+      <button type="button" class="clear" id="searchClear" aria-label="Clear search" hidden>×</button>
+    </form>
+    <nav class="lists" id="nav"></nav>
+    <div class="sidefoot">
+      <span class="lbl">Tools · tap to filter</span>
+      <div class="sources" id="sources" aria-label="Connection status"></div>
+      <button type="button" class="gear" id="gearBtn" aria-expanded="false" aria-controls="settingsBox"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Settings · target mix</button>
+      <div id="settingsBox"></div>
+    </div>
+  </aside>
+  <div class="scrim" id="scrim"></div>
+
+  <main class="panel" id="app">
+    <div class="topline">
+      <button class="burger" id="burger" type="button" aria-label="Show or hide lists" aria-controls="side">
+        <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+      <button class="burger" id="searchBtn" type="button" aria-label="Search">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg>
+      </button>
+    </div>
+    <div class="titlewrap">
+      <header class="day">
+        <div>
+          <h1 id="dayName">Today</h1>
+          <div class="sub" id="daySub"></div>
+        </div>
+        <div class="round-btns" id="dayBtns" aria-label="Change day">
+          <button type="button" class="refresh" id="refreshBtn">↻ Refresh</button>
+          <button type="button" id="prevDay" aria-label="Previous day">‹</button>
+          <button type="button" id="nextDay" aria-label="Next day">›</button>
+        </div>
+      </header>
+      <svg class="wave" viewBox="0 0 420 14" preserveAspectRatio="none" aria-hidden="true"><path d="M2 7 Q 9 1 16 7 T 30 7 T 44 7 T 58 7 T 72 7 T 86 7 T 100 7 T 114 7 T 128 7 T 142 7 T 156 7 T 170 7 T 184 7 T 198 7 T 212 7 T 226 7 T 240 7 T 254 7 T 268 7 T 282 7 T 296 7 T 310 7 T 324 7 T 338 7 T 352 7 T 366 7 T 380 7 T 394 7 T 408 7 T 418 7" fill="none" stroke="var(--wave)" stroke-width="2.4" stroke-linecap="round"/></svg>
+      <p class="brief" id="brief"></p>
+      <div class="planbar" id="planbar"></div>
+    </div>
+    <div id="notices"></div>
+    <div id="page" style="display:flex;flex-direction:column;gap:28px"></div>
+    <p class="saved" id="saved" role="status"></p>
+    <div class="capture" id="captureBar">
+      <form id="captureForm">
+        <span class="plus" aria-hidden="true">+</span>
+        <input id="capture" type="text" placeholder="Capture a task, project or note…" aria-label="Capture a task, project or note" autocomplete="off" data-bwignore="true" data-lpignore="true" data-1p-ignore="true" data-form-type="other">
+        <button class="send" id="captureSend" type="submit" aria-label="Capture"><svg viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></svg></button>
+      </form>
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast" role="status" hidden><span id="toastText"></span><button type="button" class="alt" id="toastBtn2" hidden></button><button type="button" id="toastBtn" hidden>Undo</button></div>
+
+<script>
+(() => {
+"use strict";
+/* ---------- constants ---------- */
+const ME_EMAIL = "justin@appliancerepairmarketing.net";
+const ME_SLACK = "U02QHR51J";
+const ME_ASANA = "1998998040687";
+const TZ = "America/New_York";
+const POLL_MS = 10 * 60 * 1000;
+const PLAN_WAIT_MS = 25000;
+const EVENING_HOUR = 17;
+const COMMIT_MS = 5000;
+
+const VIEWS = [
+  { id: "today", name: "Today", icon: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>' },
+  { id: "week", name: "This Week", icon: '<rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/>' },
+  { id: "waiting", name: "Waiting On", icon: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>' },
+  { id: "backlog", name: "Backlog", icon: '<path d="M4 7h16M4 12h16M4 17h10"/>' },
+  { id: "loops", name: "Open Loops", icon: '<path d="M20 12a8 8 0 1 1-2.3-5.7"/><path d="M20 4v5h-5"/>' },
+  { sep: true },
+  { id: "projects", name: "Projects", icon: '<path d="M3.5 7.5a2 2 0 0 1 2-2h4l2 2h7a2 2 0 0 1 2 2v7.5a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z"/>' },
+  { id: "done", name: "Done", icon: '<path d="M5 12.5l4.5 4.5L19 7.5"/>' },
+  { id: "parked", name: "Parked", icon: '<rect x="4" y="5" width="16" height="4" rx="1"/><path d="M5.5 9v9a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1V9M10 13h4"/>' },
+];
+const LISTS = { today: "Today", week: "This Week", waiting: "Waiting On", backlog: "Backlog", loops: "Open Loops", parked: "Parked" };
+const HEAD = {
+  week: ["This Week", "Up to 25 work items, highest score first, plus this week's meetings."],
+  waiting: ["Waiting On", "You answered, delegated, assigned or asked. It's on someone else's plate now."],
+  backlog: ["Backlog", "Up to 25 items that can wait. Anything past that goes to Parked."],
+  loops: ["Open Loops", "Started in Claude with no closure yet. No due date, no progress, nothing built."],
+  projects: ["Projects", "Projects you made here, plus real projects in Asana: what's open, what's late, and who owns it."],
+  done: ["Done", "Everything you've checked off, newest first."],
+  parked: ["Parked", "Overflow from Backlog. Never deleted and never sent back to Asana or TickTick."],
+};
+
+/* ---------- helpers ---------- */
+const $ = (id) => document.getElementById(id);
+// None of the page's text boxes are logins; tell password managers (Bitwarden, LastPass, 1Password) to stay out.
+function noAutofill(el) {
+  el.setAttribute("autocomplete", "off"); el.setAttribute("data-bwignore", "true");
+  el.setAttribute("data-lpignore", "true"); el.setAttribute("data-1p-ignore", "true"); el.setAttribute("data-form-type", "other");
+  return el;
+}
+function h(tag, attrs, ...kids) {
+  const el = document.createElement(tag);
+  if (tag === "input" || tag === "textarea" || tag === "form") noAutofill(el);
+  if (attrs) for (const [k, v] of Object.entries(attrs)) {
+    if (v == null || v === false) continue;
+    if (k === "class") el.className = v;
+    else if (k === "html") el.innerHTML = v;
+    else if (k.startsWith("on")) el.addEventListener(k.slice(2), v);
+    else if (k === "value") el.value = v;
+    else el.setAttribute(k, v === true ? "" : v);
+  }
+  for (const c of kids.flat()) if (c != null && c !== false) el.append(c.nodeType ? c : String(c));
+  return el;
+}
+function icon(id) { const s = document.createElementNS("http://www.w3.org/2000/svg", "svg"); s.setAttribute("class", "i"); const u = document.createElementNS("http://www.w3.org/2000/svg", "use"); u.setAttribute("href", "#" + id); s.append(u); return s; }
+const store = {
+  get(k, d) { try { const v = localStorage.getItem("ddd." + k); return v ? JSON.parse(v) : d; } catch { return d; } },
+  set(k, v) { try { localStorage.setItem("ddd." + k, JSON.stringify(v)); } catch {} },
+};
+const ta = document.createElement("textarea");
+function decode(s) { ta.innerHTML = String(s || ""); return ta.value; }
+function clip(s, n) { s = String(s || "").replace(/\s+/g, " ").trim(); return s.length > n ? s.slice(0, n - 1) + "…" : s; }
+function clone(o) { return o == null ? o : JSON.parse(JSON.stringify(o)); }
+function ymd(daysBack) { return new Date(Date.now() - daysBack * 864e5).toLocaleDateString("en-CA", { timeZone: TZ }); }
+function dayOf(ms) { return new Date(ms).toLocaleDateString("en-CA", { timeZone: TZ }); }
+function shiftDate(date, days) { const d = new Date(date + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() + days); return d.toISOString().slice(0, 10); }
+function nowHour() { return Number(new Date().toLocaleString("en-US", { timeZone: TZ, hour: "numeric", hour12: false })) % 24; }
+const nowIso = () => new Date().toISOString();
+function ago(ms) {
+  if (!ms || isNaN(ms)) return "";
+  const m = Math.round((Date.now() - ms) / 60000);
+  if (m < 1) return "just now";
+  if (m < 60) return m + "m ago";
+  const hr = Math.round(m / 60);
+  if (hr < 24) return hr + "h ago";
+  return Math.round(hr / 24) + "d ago";
+}
+function clock(ms) { return new Date(ms).toLocaleTimeString("en-US", { timeZone: TZ, hour: "numeric", minute: "2-digit" }).replace(" ", "").toLowerCase(); }
+function parseWhen(due) { const s = String(due); return s.length === 10 ? Date.parse(s + "T12:00:00") : Date.parse(s.replace(/([+-]\d{2})(\d{2})$/, "$1:$2")); }
+function daysUntil(due) {
+  if (!due) return null;
+  const t = parseWhen(due); if (isNaN(t)) return null;
+  const d = String(due).length === 10 ? String(due) : dayOf(t);
+  return Math.round((Date.parse(d + "T12:00:00Z") - Date.parse(ymd(0) + "T12:00:00Z")) / 864e5);
+}
+function dueLabel(due) {
+  const n = daysUntil(due); if (n == null) return null;
+  if (n < 0) return { text: (-n) + "d overdue", late: true };
+  if (n === 0) return { text: "Due today", late: true };
+  if (n === 1) return { text: "Due tomorrow", late: false };
+  const d = new Date(parseWhen(due));
+  return { text: "Due " + d.toLocaleDateString("en-US", n < 7 ? { weekday: "short", timeZone: TZ } : { month: "short", day: "numeric", timeZone: TZ }), late: false };
+}
+function hashKey(s) { let x = 0; for (const c of String(s)) x = (x * 31 + c.charCodeAt(0)) | 0; return (x >>> 0).toString(36); }
+function payloadOf(res) {
+  let p = res && ("payload" in res ? res.payload : res);
+  if (typeof p === "string") { try { p = JSON.parse(p); } catch {} }
+  return p;
+}
+
+/* ---------- parsers (one per source call) ---------- */
+function senderName(s) { s = String(s || ""); const m = s.match(/^\s*"?([^"<]+?)"?\s*</); return m ? m[1] : s.replace(/@.*$/, ""); }
+const NOISE = /no-?reply|notifications?@|mailer-daemon|@asana\.com|zapier|calendar-notification|@google\.com|newsletter|marketing@|updates@/i;
+// Calendar invites, confirmations and changes never belong on the page; meetings come from Google Calendar.
+const CAL_NOISE = /^(re: |fwd?: )?(invitation|updated invitation|new event|accepted|declined|tentatively accepted|canceled event|cancelled event|event canceled|event cancelled)\b|invitation from an unknown sender/i;
+
+function parseGmailIn(p) {
+  const out = [];
+  for (const t of (p && p.threads) || []) {
+    const msgs = t.messages || []; const last = msgs[msgs.length - 1]; if (!last) continue;
+    const from = String(last.sender || "");
+    if (from.toLowerCase().includes(ME_EMAIL) || NOISE.test(from)) continue;
+    if (CAL_NOISE.test(decode(last.subject || (msgs[0] && msgs[0].subject) || ""))) continue;
+    out.push({ key: "gm:" + t.id, src: "Gmail", kind: "in", title: decode(last.subject || (msgs[0] && msgs[0].subject) || "(no subject)"),
+      who: senderName(from), detail: clip(decode(last.snippet), 240), date: Date.parse(last.date), url: t.viewUrl || last.viewUrl,
+      flag: (last.labelIds || []).includes("UNREAD") ? "unread" : "" });
+  }
+  return out;
+}
+function parseGmailSent(p) {
+  const out = [];
+  for (const t of (p && p.threads) || []) {
+    const msgs = t.messages || []; const last = msgs[msgs.length - 1]; if (!last) continue;
+    if (!String(last.sender || "").toLowerCase().includes(ME_EMAIL)) continue;
+    const to = (last.toRecipients || []).filter((r) => !String(r).toLowerCase().includes(ME_EMAIL));
+    if (!to.length) continue;
+    const when = Date.parse(last.date);
+    if (Date.now() - when < 20 * 3600e3) continue;
+    if (CAL_NOISE.test(decode(last.subject || ""))) continue;
+    out.push({ key: "gs:" + t.id, src: "Gmail", kind: "out", title: decode(last.subject || "(no subject)"), who: senderName(to[0]),
+      detail: clip(decode(last.snippet), 200), date: when, url: t.viewUrl || last.viewUrl });
+  }
+  return out;
+}
+function parseSlackBlocks(p) {
+  const text = typeof p === "string" ? p : (p && (p.results || p.text)) || "";
+  const blocks = String(text).split(/###\s*Result\s+\d+\s+of\s+\d+/).slice(1);
+  return blocks.map((b) => {
+    const g = (re) => { const m = b.match(re); return m ? m[1].trim() : ""; };
+    const tm = g(/Time:\s*(.+)/).match(/(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}:\d{2})\s*(E[DS]T)?/);
+    const fromLine = g(/From:\s*(.+)/);
+    const body = (b.match(/Text:\s*\n?([\s\S]*?)(?:\n---|$)/) || [])[1] || "";
+    return {
+      channel: g(/Channel:\s*(.+)/).replace(/\s*\(ID:.*\)/, ""),
+      participants: g(/Participants:\s*(.+)/).replace(/\s*\(ID:[^)]*\)/g, ""),
+      fromName: fromLine.replace(/\s*<.*$/, "").replace(/\s*\(ID:.*$/, "").trim(),
+      fromMe: fromLine.includes(ME_SLACK), bot: /\[BOT\]/.test(fromLine),
+      url: (g(/Permalink:\s*\[link\]\(([^)]+)\)/) || "").replace(/\\\//g, "/"),
+      text: body.replace(/\\\//g, "/").replace(/<@U\w+\|([^>]+)>/g, "@$1").replace(/<(https?:[^|>]+)\|?[^>]*>/g, "$1").trim(),
+      date: tm ? Date.parse(tm[1] + "T" + tm[2] + (tm[3] === "EST" ? "-05:00" : "-04:00")) : NaN,
+    };
+  });
+}
+const isDm = (m) => /^(Group )?DM/.test(m.channel);
+function parseSlackIn(p) {
+  return parseSlackBlocks(p).filter((m) => !m.fromMe && !m.bot && m.text).map((m) => ({
+    key: "sl:" + hashKey(m.url || m.text), src: "Slack", kind: "in", title: clip(m.text, 140),
+    who: m.fromName, detail: (isDm(m) ? m.participants : m.channel) + (m.text.length > 140 ? ": " + clip(m.text, 420) : ""),
+    date: m.date, url: m.url }));
+}
+function parseSlackMine(p) {
+  return parseSlackBlocks(p).filter((m) => m.fromMe && m.text && Date.now() - m.date > 6 * 3600e3 && /\?|please|can you|let me know|need/i.test(m.text)).map((m) => ({
+    key: "so:" + hashKey(m.url || m.text), src: "Slack", kind: "out", title: clip(m.text, 140),
+    who: isDm(m) ? m.participants.replace(/Justin Eckrich,?\s*/, "") : m.channel, detail: m.text.length > 140 ? clip(m.text, 420) : "", date: m.date, url: m.url }));
+}
+function asanaItem(t) {
+  const mine = !t.assignee || t.assignee.gid === ME_ASANA;
+  return { key: (mine ? "as:" : "ad:") + t.gid, src: "Asana", kind: mine ? "task" : "out", title: t.name, who: mine ? "" : (t.assignee.name || ""),
+    detail: "", project: (t.projects || []).map((x) => x.name).filter(Boolean).join(", "), date: Date.parse(t.modified_at), due: t.due_on, url: t.permalink_url,
+    raw: { gid: t.gid } };
+}
+function parseAsanaMine(p) {
+  S.asana.mine = (p && p.data) || [];
+  const soon = Date.now() + 14 * 864e5, recent = Date.now() - 45 * 864e5;
+  return S.asana.mine.filter((t) => (t.due_on && Date.parse(t.due_on) < soon) || Date.parse(t.modified_at) > recent).map(asanaItem);
+}
+function parseAsanaDelegated(p) {
+  S.asana.out = (p && p.data) || [];
+  return S.asana.out.filter((t) => t.assignee && t.assignee.gid !== ME_ASANA).map(asanaItem);
+}
+function parseTickTick(p) {
+  const rows = ((p && p.result) || []).slice().sort((a, b) => parseWhen(b.modifiedTime) - parseWhen(a.modifiedTime));
+  return rows.slice(0, 60).map((t) => ({ key: "tt:" + t.id, src: "TickTick", kind: "task", title: t.title, who: "",
+    detail: clip(t.content || t.desc || "", 420), date: parseWhen(t.modifiedTime), due: t.dueDate,
+    url: "https://ticktick.com/webapp/#p/" + encodeURIComponent(t.projectId) + "/tasks/" + encodeURIComponent(t.id),
+    raw: { projectId: t.projectId, id: t.id } }));
+}
+// Fellow sends note ids as base64 "Note:<number>"; its meeting search takes the number and returns the notes link.
+function fellowNoteNumber(id) { try { const m = /(\d+)/.exec(atob(String(id || ""))); return m ? m[1] : ""; } catch { return ""; } }
+function parseFellow(p) {
+  const raw = p && p.result != null ? p.result : p;
+  let arr = raw;
+  if (typeof raw === "string") { const a = raw.indexOf("["), b = raw.lastIndexOf("]"); try { arr = JSON.parse(raw.slice(a, b + 1)); } catch { arr = []; } }
+  const out = [];
+  for (const note of Array.isArray(arr) ? arr : []) for (const ai of note.action_items || []) {
+    const mine = (ai.assignees || []).find((x) => /justin/i.test(x.name || ""));
+    if (!mine || mine.status === "done") continue;
+    out.push({ key: "fe:" + hashKey(ai.text), src: "Fellow", kind: "task", title: ai.text, who: note.note_title,
+      detail: ai.ai_suggested ? "Suggested from meeting notes" : "", date: Date.parse(note.meeting_start_time), url: null,
+      raw: { noteId: fellowNoteNumber(note.note_id), at: note.meeting_start_time } });
+  }
+  return out;
+}
+function parseCalendar(p) {
+  S.events = ((p && p.events) || []).filter((e) => e.status !== "cancelled" && !(e.attendees || []).some((a) => a.self && a.responseStatus === "declined"))
+    .map((e) => {
+      const allDay = !!(e.start && e.start.date && !e.start.dateTime);
+      const start = allDay ? Date.parse(e.start.date + "T00:00:00") : Date.parse(e.start.dateTime);
+      const end = allDay ? start + 864e5 : Date.parse((e.end && e.end.dateTime) || e.start.dateTime);
+      const others = (e.attendees || []).filter((a) => !a.self).map((a) => a.displayName || String(a.email || "").replace(/@.*/, ""));
+      return { id: e.id, title: e.summary || "(no title)", start, end, allDay, day: allDay ? e.start.date : dayOf(start), url: e.htmlLink,
+        join: e.conferenceUrl || e.hangoutLink || null, who: others.slice(0, 3).join(", ") + (others.length > 3 ? " +" + (others.length - 3) : "") };
+    }).sort((a, b) => a.start - b.start);
+  return [];
+}
+
+/* ---------- source definitions ---------- */
+const CONNECTORS = ["Google Calendar", "Gmail", "Slack", "Asana", "TickTick", "Fellow.ai"];
+const SHORT = { "Google Calendar": "Calendar", "Fellow.ai": "Fellow" };
+function calInput() { const s = new Date(ymd(0) + "T00:00:00"); return { startTime: s.toISOString(), endTime: new Date(s.getTime() + 8 * 864e5).toISOString(), orderBy: "startTime", pageSize: 100, timeZone: TZ }; }
+const SOURCES = [
+  { key: "cal", server: "Google Calendar", tool: "list_events", parse: parseCalendar, input: calInput },
+  { key: "gmailIn", server: "Gmail", tool: "search_threads", parse: parseGmailIn,
+    input: () => ({ query: "in:inbox newer_than:7d -category:promotions -category:social -category:updates -category:forums -filename:ics", pageSize: 30 }) },
+  { key: "gmailSent", server: "Gmail", tool: "search_threads", parse: parseGmailSent,
+    input: () => ({ query: "in:sent newer_than:14d -filename:ics", pageSize: 25 }) },
+  { key: "slackIn", server: "Slack", tool: "slack_search_public_and_private", parse: parseSlackIn,
+    input: () => ({ filters: "<@" + ME_SLACK + "> after:" + ymd(5), limit: 20, include_context: false, sort: "timestamp", natural_language_query: "", max_context_length: 450 }) },
+  { key: "slackDm", server: "Slack", tool: "slack_search_public_and_private", parse: parseSlackIn,
+    input: () => ({ filters: "is:dm after:" + ymd(4), limit: 20, include_context: false, sort: "timestamp", natural_language_query: "", max_context_length: 450 }) },
+  { key: "slackMine", server: "Slack", tool: "slack_search_public_and_private", parse: parseSlackMine,
+    input: () => ({ filters: "from:<@" + ME_SLACK + "> after:" + ymd(7), limit: 20, include_context: false, sort: "timestamp", natural_language_query: "", max_context_length: 450 }) },
+  { key: "asanaMine", server: "Asana", tool: "get_my_tasks", parse: parseAsanaMine,
+    input: () => ({ completed_since: "now", limit: 100, opt_fields: "name,due_on,permalink_url,modified_at,projects.name,assignee.name" }) },
+  { key: "asanaOut", server: "Asana", tool: "search_tasks", parse: parseAsanaDelegated,
+    input: () => ({ created_by_any: "me", completed: false, modified_on_after: ymd(30), limit: 60, opt_fields: "name,assignee.name,due_on,permalink_url,modified_at,projects.name" }) },
+  { key: "ticktick", server: "TickTick", tool: "filter_tasks", parse: parseTickTick,
+    input: () => ({ filter: { status: [0], priority: [3, 5] }, client_timezone: TZ }) },
+  { key: "fellow", server: "Fellow.ai", tool: "get_action_items", parse: parseFellow,
+    input: () => ({ only_ongoing_action_items: true, from_date: ymd(14) }) },
+];
+
+/* ---------- state ----------
+   db layout (owner-only):
+     digest/latest     written by the 5:14am "Command Deck morning sweep" task (Claude chats + projects)
+     plans/<date>      { generatedAt, brief, one, top3[3], map{itemKey:{b,p,a,j}}, notes }   b = today|week|waiting|backlog|drop
+     state/cleared     { map{itemKey: ms} }  items checked off (kept for older copies of the page)
+     overrides/<key>   { list?, done?, doneAt?, title, src, url, raw?, history[{at,by,text}], syncError? }  moves, check-offs, notes
+     items/<id>        { title, list, note?, url?, due?, by, createdAt, done, doneAt?, history[] }  added by Justin or by Claude
+     state/fellowLinks { map{noteNumber: url} }  Fellow meeting-notes links, looked up once per meeting
+     projects/<id>     { name, from{key,src,url,title,list}, createdAt, archived, finishedAt?, history[] }  made with Move → Projects
+   An item moved to Projects gets list "project" (overrides/<key> or items/<id>) so it leaves every list. */
+const S = {
+  view: VIEWS.some((v) => v.id === store.get("view", "today")) ? store.get("view", "today") : "today",
+  sideOpen: store.get("side", true),
+  today: ymd(0), date: ymd(0),
+  bySource: {}, srcDone: new Set(), status: {}, events: [], asana: { mine: [], out: [] },
+  digest: null, plan: undefined, cleared: {}, ov: {}, items: {}, projects: {},
+  srcFilter: null, refreshing: false,
+  settings: null, settingsOpen: false, mix: null, swap: null, cutsOpen: false, laneSorting: false, laneSortTried: false,
+  fellowLinks: {}, search: null, team: null, asanaOpen: new Set(), asanaDraft: {}, asanaBusy: new Set(), asanaErr: {},
+  db: null, mcp: null, sample: null,
+  planning: false, planErr: "", attempted: new Set(), sortingNew: false,
+  open: {}, expanded: new Set(), moving: new Set(), openProj: new Set(), pending: new Map(),
+  confirmReplan: false, bootAt: Date.now(),
+};
+
+function sourceItems() {
+  const seen = new Set(), out = [];
+  for (const arr of Object.values(S.bySource)) for (const it of arr) { if (seen.has(it.key)) continue; seen.add(it.key); out.push(it); }
+  return out;
+}
+function sourcesIn() { return SOURCES.every((s) => S.srcDone.has(s.key)); }
+function isToday() { return S.date === S.today; }
+function isTomorrow() { return S.date === shiftDate(S.today, 1); }
+function canPlan() { return isToday() || isTomorrow(); }
+
+/* ---------- everything in one list ---------- */
+function loopEntries() {
+  const d = S.digest || {}, out = [];
+  for (const t of d.threads || []) out.push({ key: "h:" + hashKey(t.url || t.title), src: "Claude", kind: "loop", title: t.title, a: t.nextStep || "",
+    detail: t.openLoop || "", url: t.url || "", date: Date.parse(t.updatedAt) });
+  for (const p of d.projects || []) out.push({ key: "c:" + hashKey(p.name), src: "Claude", kind: "loop", idea: true, title: p.name, a: p.nextStep || "",
+    detail: p.status || "", url: "", date: Date.parse(p.lastTouched) });
+  return out;
+}
+function itemEntries() {
+  return Object.entries(S.items).filter(([, d]) => d && d.list !== "removed").map(([id, d]) => ({ key: "it:" + id, id, manual: true, src: d.by === "Claude" ? "Claude" : "You", kind: "manual",
+    title: d.title || "", detail: d.note || "", url: d.url || "", due: d.due || null, a: d.nextStep || "",
+    date: Date.parse(d.updatedAt || d.createdAt), list: d.list || "today", done: !!d.done, fromNotes: d.from === "notes" }));
+}
+function planEntry(key) { return S.plan && S.plan.map ? S.plan.map[key] : null; }
+function bucketToList(t) {
+  if (!t) return null;
+  if (t.b === "needs_you") return t.p === 0 ? "today" : "week";   // plans made before the sidebar
+  if (t.b === "radar") return "backlog";
+  if (t.b === "drop") return "drop";
+  return LISTS[t.b] ? t.b : null;
+}
+function fallbackList(e) {
+  if (e.kind === "out") return "waiting";
+  const n = daysUntil(e.due);
+  if (n != null && n <= 0) return "today";
+  if (n != null && n <= 7) return "week";
+  if (e.date && Date.now() - e.date > 21 * 864e5) return "backlog";
+  if (e.src === "TickTick" && n == null) return "backlog";
+  return "week";
+}
+function isDone(e) { return e.manual ? e.done : !!(S.cleared[e.key] || (S.ov[e.key] && S.ov[e.key].done)); }
+function placeOf(e) {
+  if (S.pending.has(e.key)) return S.pending.get(e.key);
+  if (isDone(e)) return "done";
+  if (e.manual) return e.list;
+  const ov = S.ov[e.key];
+  if (ov && ov.list) return ov.list;
+  if (e.kind === "loop") return "loops";
+  const t = bucketToList(planEntry(e.key));
+  if (t === "drop") return null;
+  if (!t && e.src === "Gmail") return null;
+  return t || fallbackList(e);
+}
+function entries() {
+  const list = [...sourceItems(), ...loopEntries(), ...itemEntries()];
+  for (const e of list) {
+    if (e.src === "Fellow" && !e.url && e.raw && S.fellowLinks[e.raw.noteId]) e.url = S.fellowLinks[e.raw.noteId];
+    const t = planEntry(e.key);
+    if (t) { e.p = t.p; if (!e.a) e.a = t.a || ""; if (!e.project) e.project = t.j || ""; }
+    e.fresh = !e.manual && e.kind !== "loop" && !!S.plan && !t;
+    enrich(e);
+    e.place = placeOf(e);
+  }
+  allocate(list);
+  const have = new Set(list.map((e) => e.key));
+  for (const [key, ov] of Object.entries(S.ov)) if (ov.done && !have.has(key)) list.push({ key, src: ov.src || "You", title: ov.title || "(item)", url: ov.url || "", raw: ov.raw || null, place: "done", ghost: true });
+  return list;
+}
+
+/* ---------- toast & notices ---------- */
+let toastTimer = null, toastUndo = null, toastAlt = null;
+function say(msg, undo, ms, alt) {
+  $("toastText").textContent = msg;
+  toastUndo = undo || null; toastAlt = alt || null;
+  $("toastBtn").hidden = !undo;
+  $("toastBtn2").hidden = !alt; $("toastBtn2").textContent = alt ? alt.label : "";
+  $("toast").classList.toggle("plain", !undo && !alt);
+  $("toast").hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { $("toast").hidden = true; toastUndo = null; toastAlt = null; }, ms || (undo || alt ? 7000 : 3000));
+}
+$("toastBtn").addEventListener("click", () => { if (toastUndo) toastUndo(); $("toast").hidden = true; toastUndo = null; });
+$("toastBtn2").addEventListener("click", () => { if (toastAlt) toastAlt.fn(); $("toast").hidden = true; toastAlt = null; });
+const extraNotes = [];
+function note(msg) { extraNotes.push(msg); if (extraNotes.length > 3) extraNotes.shift(); render(); }
+
+/* ---------- saving (one write at a time per doc, debounced, flushed when the page hides) ---------- */
+const writers = {};
+function writer(path) { return writers[path] ||= { timer: null, chain: Promise.resolve(), pending: null, busy: 0 }; }
+function queueSet(path, data, delay) {
+  const w = writer(path);
+  w.pending = data;
+  clearTimeout(w.timer);
+  w.timer = setTimeout(() => flush(path), delay == null ? 700 : delay);
+}
+function flush(path) {
+  const w = writer(path);
+  clearTimeout(w.timer); w.timer = null;
+  if (!w.pending || !S.db) return w.chain;
+  const data = w.pending; w.pending = null; w.busy++;
+  $("saved").textContent = "Saving…";
+  w.chain = w.chain.then(() => S.db.doc(path).set(data)).then(
+    () => { $("saved").textContent = "Saved"; },
+    (e) => { $("saved").textContent = ""; say("Couldn't save: " + ((e && (e.message || e.code)) || "unknown error"), null, 10000); },
+  ).finally(() => { w.busy--; });
+  return w.chain;
+}
+function flushAll() { for (const p of Object.keys(writers)) flush(p); }
+function busy(path) { const w = writers[path]; return !!(w && (w.timer || w.busy)); }
+window.addEventListener("pagehide", flushAll);
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") flushAll(); });
+
+const planPath = (d) => "plans/" + d;
+function savePlan(delay) { if (S.plan) queueSet(planPath(S.date), clone(S.plan), delay); }
+function saveCleared() { queueSet("state/cleared", { map: clone(S.cleared) }, 300); }
+function withHistory(cur, text) { return text ? [...((cur && cur.history) || []), { at: nowIso(), by: "Justin", text }].slice(-40) : (cur && cur.history) || []; }
+function saveOv(key, patch, text) {
+  const cur = S.ov[key] || {};
+  S.ov[key] = { ...cur, ...patch, updatedAt: nowIso(), history: withHistory(cur, text) };
+  queueSet("overrides/" + key, clone(S.ov[key]), 0);
+  render();
+}
+function saveItem(id, patch, text) {
+  const cur = S.items[id] || {};
+  S.items[id] = { ...cur, ...patch, updatedAt: nowIso(), history: withHistory(cur, text) };
+  queueSet("items/" + id, clone(S.items[id]), 0);
+  render();
+}
+function saveProject(id, patch, text) {
+  const cur = S.projects[id] || {};
+  S.projects[id] = { ...cur, ...patch, updatedAt: nowIso(), history: withHistory(cur, text) };
+  queueSet("projects/" + id, clone(S.projects[id]), 0);
+  render();
+}
+const snap = (e) => ({ title: clip(e.title, 200), src: e.src, url: e.url || "", raw: e.raw || (S.ov[e.key] || {}).raw || null });
+
+/* ---------- check off (everywhere), move, notes ---------- */
+const pendingTimers = new Map();
+function check(e) {
+  if (S.pending.has(e.key)) { cancel(e.key); return; }
+  if (e.place === "done") { putBack(e); return; }
+  S.pending.set(e.key, e.place);
+  const also = e.src === "Asana" || e.src === "TickTick" ? " Also in " + e.src + "." : "";
+  pendingTimers.set(e.key, setTimeout(() => commit(e), COMMIT_MS));
+  say("Done: " + clip(e.title, 44) + "." + also, () => cancel(e.key), COMMIT_MS);
+  render();
+}
+function cancel(key) { clearTimeout(pendingTimers.get(key)); pendingTimers.delete(key); S.pending.delete(key); render(); }
+function commit(e) {
+  pendingTimers.delete(e.key); S.pending.delete(e.key);
+  if (e.manual) { saveItem(e.id, { done: true, doneAt: nowIso() }, "Checked off"); markSlotsDone(e.key, true); return; }
+  S.cleared[e.key] = Date.now(); saveCleared();
+  saveOv(e.key, { ...snap(e), done: true, doneAt: nowIso(), syncError: null }, "Checked off");
+  markSlotsDone(e.key, true);
+  sync(e, true);
+}
+async function sync(e, completed) {
+  if (!S.mcp || (e.src !== "Asana" && e.src !== "TickTick")) return;
+  const raw = e.raw || (S.ov[e.key] || {}).raw || {};
+  try {
+    if (e.src === "Asana") {
+      const gid = raw.gid || e.key.slice(3);
+      const r = await S.mcp.callTool("Asana", "update_tasks", { tasks: [{ task: gid, completed }] });
+      const p = payloadOf(r);
+      if (p && Array.isArray(p.failed) && p.failed.length) throw { code: "tool_error" };
+    } else {
+      if (!completed) { note("Put back here. Reopen “" + clip(e.title, 50) + "” in TickTick too; this page can't reopen TickTick tasks."); return; }
+      if (!raw.projectId || !raw.id) throw { code: "tool_error" };
+      await S.mcp.callTool("TickTick", "complete_task", { project_id: raw.projectId, task_id: raw.id });
+    }
+    S.mcp.invalidate(e.src).catch(() => {});
+  } catch (err) {
+    const why = err && err.code === "needs_reauth" ? "reconnect " + e.src + " in Claude settings" : err && err.code === "not_in_manifest" ? e.src + " changes are turned off for this page" : "couldn't reach " + e.src;
+    saveOv(e.key, { syncError: why });
+    note("“" + clip(e.title, 50) + "” is " + (completed ? "done" : "back") + " here, but " + why + ". " + (completed ? "Retry it from Done." : "Reopen it there by hand."));
+  }
+}
+function putBack(e) {
+  if (e.manual) { saveItem(e.id, { done: false, doneAt: null }, "Put back"); markSlotsDone(e.key, false); return; }
+  delete S.cleared[e.key]; saveCleared();
+  saveOv(e.key, { done: false, doneAt: null, syncError: null }, "Put back");
+  markSlotsDone(e.key, false);
+  sync(e, false);
+}
+function retry(e) { saveOv(e.key, { syncError: null }); sync(e, true); }
+function moveTo(e, list) {
+  S.moving.delete(e.key);
+  const wasFull = isFull(list, e.key);
+  const mark = { list, movedBy: "justin", movedAt: nowIso() };
+  if (e.manual) saveItem(e.id, mark, "Moved to " + LISTS[list]);
+  else saveOv(e.key, { ...snap(e), ...mark }, "Moved to " + LISTS[list]);
+  say("Moved to " + LISTS[list]);
+  checkFull(list, e.key, wasFull);
+}
+function setList(key, id, list, text) {
+  if (id) saveItem(id, { list }, text);
+  else saveOv(key, { list }, text);
+}
+function moveToProject(e) {
+  S.moving.delete(e.key);
+  const id = "p-" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  const from = { key: e.key, src: e.src, url: e.url || "", title: clip(e.title, 200), list: e.place };
+  saveProject(id, { name: clip(e.title, 120), from, createdAt: nowIso(), archived: false }, "Made a project");
+  if (e.manual) saveItem(e.id, { list: "project" }, "Moved to Projects");
+  else saveOv(e.key, { ...snap(e), list: "project" }, "Moved to Projects");
+  say("Moved to Projects", () => { saveProject(id, { archived: true }, "Undone"); setList(e.key, e.manual ? e.id : null, from.list, "Moved back to " + LISTS[from.list]); });
+}
+function moveBack(p) {
+  const f = p.from || {}, list = LISTS[f.list] ? f.list : "week";
+  saveProject(p.id, { archived: true }, "Moved back to " + LISTS[list]);
+  if (f.key) setList(f.key, f.key.startsWith("it:") ? f.key.slice(3) : null, list, "Moved back to " + LISTS[list]);
+  say("Moved back to " + LISTS[list]);
+}
+function finishProject(p) {
+  saveProject(p.id, { archived: true, finishedAt: nowIso() }, "Marked finished");
+  say("Finished: " + clip(p.name, 40), () => saveProject(p.id, { archived: false, finishedAt: null }, "Reopened"));
+}
+function myProjects() {
+  return Object.entries(S.projects).filter(([, p]) => p && !p.archived).map(([id, p]) => ({ ...p, id }))
+    .sort((a, b) => (Date.parse(b.createdAt) || 0) - (Date.parse(a.createdAt) || 0));
+}
+function addNote(e, text) {
+  text = text.trim(); if (!text) return;
+  if (e.manual) saveItem(e.id, {}, text); else saveOv(e.key, snap(e), text);
+}
+function quickAdd(list, title) {
+  title = title.trim(); if (!title) return;
+  const id = "i-" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  const wasFull = isFull(list, "it:" + id);
+  saveItem(id, { title, list, by: "Justin", createdAt: nowIso(), done: false, movedBy: "justin", movedAt: nowIso() }, "Added to " + LISTS[list]);
+  checkFull(list, "it:" + id, wasFull);
+}
+function markSlotsDone(key, done) {
+  if (!S.plan || !key) return;
+  let hit = false;
+  if (S.plan.one && S.plan.one.key === key && !!S.plan.one.done !== done) { S.plan.one.done = done; hit = true; }
+  for (const s of S.plan.top3 || []) if (s && s.key === key && !!s.done !== done) { s.done = done; hit = true; }
+  if (hit) savePlan(0);
+}
+
+/* ---------- connection status ---------- */
+function setStatus(conn, s, msg, at) { S.status[conn] = { s, msg, at }; renderSources(); }
+// Each tool in the sidebar is also a filter: tap it to see only that tool's items.
+const FILTER_OF = { "Google Calendar": "Calendar", "Gmail": "Gmail", "Slack": "Slack", "Asana": "Asana", "TickTick": "TickTick", "Fellow.ai": "Fellow" };
+function srcButton(f, state, label, title) {
+  return h("button", { type: "button", "data-s": state, title: title || null, "aria-pressed": String(S.srcFilter === f),
+    "aria-label": "Show only " + (f === "Claude" ? "Claude chats" : f) + " items", onclick: () => toggleSrc(f) }, h("span", { class: "dot" }), label);
+}
+function renderSources() {
+  const box = $("sources"); box.replaceChildren();
+  for (const c of CONNECTORS) {
+    const st = S.status[c] || { s: "load" };
+    const extra = st.s === "err" ? " · " + st.msg : st.s === "load" ? " · loading" : "";
+    box.append(srcButton(FILTER_OF[c], st.s, (SHORT[c] || c) + extra, st.msg));
+  }
+  const d = S.digest;
+  const at = d && d.generatedAt ? Date.parse(d.generatedAt) : 0;
+  box.append(srcButton("Claude", d === null ? "load" : at ? "ok" : "err",
+    "Claude chats" + (at ? " · swept " + ago(at) : d === null ? " · loading" : " · sweep hasn't run")));
+}
+function toggleSrc(f) {
+  S.srcFilter = S.srcFilter === f ? null : f;
+  if (S.search) setSearch("");
+  if (!wide()) $("shell").classList.remove("open");
+  renderSources(); render();
+  window.scrollTo({ top: 0 });
+}
+function errCopy(e, server) {
+  const name = SHORT[server] || server;
+  switch (e && e.code) {
+    case "needs_reauth": return "reconnect " + name + " in Claude settings";
+    case "server_not_connected": case "server_not_found": return "add " + name + " in Claude settings";
+    case "selection_required": return "pick which " + name + " account to use";
+    case "not_in_manifest": return "turned off for this page";
+    case "blocked_by_policy": case "approval_required": return "blocked by your organization";
+    case "server_unavailable": return "didn't answer, will retry";
+    case "tool_error": return clip((e && e.message) || "error", 60);
+    case "not_granted": case "capability_disabled": return "not allowed here";
+    default: return "couldn't load";
+  }
+}
+
+/* ---------- live connector watches ---------- */
+function startWatches() {
+  const perConn = {};
+  for (const src of SOURCES) (perConn[src.server] ||= []).push(src.key);
+  for (const src of SOURCES) {
+    S.mcp.watchTool(src.server, src.tool, src.input(), (ev) => {
+      if (ev.type === "data") {
+        let items = [];
+        try { items = src.parse(payloadOf(ev.result)) || []; } catch (err) { console.warn(src.key, err); }
+        S.bySource[src.key] = items.filter((i) => i.title);
+        const at = ev.result && ev.result.cache ? ev.result.cache.storedAt : Date.now();
+        S.srcDone.add(src.key);
+        if (perConn[src.server].every((k) => S.srcDone.has(k))) setStatus(src.server, "ok", "", at);
+        if (src.key === "fellow") fetchFellowLinks();
+      } else {
+        const e = ev.error || {};
+        if (["needs_reauth", "server_not_connected", "blocked_by_policy", "approval_required", "not_in_manifest", "not_granted"].includes(e.code)) { delete S.bySource[src.key]; if (src.key === "cal") S.events = []; }
+        S.srcDone.add(src.key);
+        setStatus(src.server, "err", errCopy(e, src.server));
+      }
+      render();
+      maybePlan();
+      maybeLaneSort();
+    }, { cache: { staleTime: 5 * 60 * 1000, gcTime: 24 * 3600 * 1000 }, refetchInterval: POLL_MS });
+  }
+}
+
+/* ---------- Fellow meeting-notes links ---------- */
+let fellowFetching = false;
+async function fetchFellowLinks() {
+  if (fellowFetching || !S.mcp || !S.db) return;
+  const want = new Map();
+  for (const it of S.bySource.fellow || []) if (it.raw && it.raw.noteId && !(it.raw.noteId in S.fellowLinks)) want.set(it.raw.noteId, it.raw.at);
+  if (!want.size) return;
+  fellowFetching = true;
+  let changed = false;
+  try {
+    for (const [id, at] of [...want].slice(0, 12)) {
+      const day = dayOf(Date.parse(at) || Date.now());
+      try {
+        const r = await S.mcp.callTool("Fellow.ai", "search_meetings", { note_id: Number(id), from_date: shiftDate(day, -1), to_date: shiftDate(day, 1) });
+        let p = payloadOf(r); const raw = p && p.result != null ? p.result : p;
+        let arr = raw;
+        if (typeof raw === "string") { const a = raw.indexOf("["), b = raw.lastIndexOf("]"); try { arr = JSON.parse(raw.slice(a, b + 1)); } catch { arr = []; } }
+        const hit = (Array.isArray(arr) ? arr : []).find((m) => String(m.note_id) === String(id)) || (Array.isArray(arr) ? arr[0] : null);
+        const url = hit && /^https:\/\/[\w.-]*fellow\.(app|link)\//.test(hit.url || "") ? hit.url : "";
+        S.fellowLinks[id] = url; changed = true;
+      } catch (e) { if (e && (e.code === "not_in_manifest" || e.code === "needs_reauth" || e.code === "not_granted")) break; }
+    }
+  } finally { fellowFetching = false; }
+  if (changed) { queueSet("state/fellowLinks", { map: clone(S.fellowLinks) }, 300); render(); }
+}
+function urlForKey(key) {
+  if (!key) return "";
+  const it = sourceItems().find((x) => x.key === key);
+  if (!it) return "";
+  if (it.url) return it.url;
+  return it.raw && S.fellowLinks[it.raw.noteId] || "";
+}
+
+/* ---------- Search: this page, then Slack, Gmail and Asana ---------- */
+const STOP = new Set("the a an and or to of for in on with at by from is are be this that it as into via about their our your his her its them they we you have has had will can not but out all any more than then when what who how just also only very really".split(" "));
+function keywordsOf(t, n) {
+  const w = String(t || "").toLowerCase().replace(/[^a-z0-9\s'-]/g, " ").split(/\s+/).filter((x) => x.length > 3 && !STOP.has(x));
+  return [...new Set(w)].sort((a, b) => b.length - a.length).slice(0, n || 3);
+}
+let searchTimer = null, searchSeq = 0;
+function setSearch(q, fromItem) {
+  q = String(q || "").trim();
+  $("search").value = q; $("searchClear").hidden = !q;
+  clearTimeout(searchTimer);
+  if (q.length < 2) { if (S.search) { S.search = null; render(); } return; }
+  S.search = { q, remote: {} };
+  render();
+  searchTimer = setTimeout(() => runRemote(q), fromItem ? 0 : 600);
+}
+async function runRemote(q) {
+  if (!S.mcp) return;
+  const seq = ++searchSeq;
+  const words = q.split(/\s+/).filter(Boolean).slice(0, 5);
+  const jobs = {
+    Slack: () => S.mcp.callTool("Slack", "slack_search_public_and_private", { keywords: words, natural_language_query: q, limit: 10, include_context: false, sort: "score", max_context_length: 300 })
+      .then((r) => parseSlackBlocks(payloadOf(r)).filter((m) => m.text).map((m) => ({ title: clip(m.text, 160), who: m.fromName, where: isDm(m) ? "Direct message" : m.channel, date: m.date, url: m.url }))),
+    Gmail: () => S.mcp.callTool("Gmail", "search_threads", { query: q, pageSize: 10 })
+      .then((r) => ((payloadOf(r) || {}).threads || []).map((t) => { const ms = t.messages || [], last = ms[ms.length - 1] || {}; return { title: decode(last.subject || (ms[0] && ms[0].subject) || "(no subject)"), who: senderName(last.sender), where: clip(decode(last.snippet), 160), date: Date.parse(last.date), url: t.viewUrl || last.viewUrl }; })),
+    Asana: () => S.mcp.callTool("Asana", "search_tasks", { text: q, completed: false, limit: 10, opt_fields: "name,assignee.name,due_on,permalink_url,modified_at,projects.name" })
+      .then((r) => ((payloadOf(r) || {}).data || []).map((t) => ({ title: t.name, who: t.assignee ? t.assignee.name : "", where: (t.projects || []).map((x) => x.name).filter(Boolean).join(", "), date: Date.parse(t.modified_at), due: t.due_on, url: t.permalink_url }))),
+  };
+  for (const [name, job] of Object.entries(jobs)) {
+    S.search.remote[name] = { status: "load" };
+    job().then((rows) => { if (seq === searchSeq && S.search) { S.search.remote[name] = { status: "ok", rows }; render(); } },
+      (e) => { if (seq === searchSeq && S.search) { S.search.remote[name] = { status: "err", msg: errCopy(e, name) }; render(); } });
+  }
+  render();
+}
+function matches(e, words) {
+  const hay = [e.title, e.detail, e.a, e.who, e.project, e.src].join(" ").toLowerCase();
+  return words.every((w) => hay.includes(w));
+}
+function searchPage(page, all) {
+  const q = S.search.q, words = q.toLowerCase().split(/\s+/).filter(Boolean);
+  const local = all.filter((e) => e.place && e.place !== "project" && matches(e, words));
+  const mine = myProjects().filter((p) => words.every((w) => [p.name, (p.from || {}).title].join(" ").toLowerCase().includes(w)));
+  const evs = S.events.filter((ev) => words.every((w) => [ev.title, ev.who].join(" ").toLowerCase().includes(w)));
+  const box = h("div");
+  if (!local.length && !mine.length && !evs.length) box.append(h("p", { class: "empty" }, "Nothing on this page matches."));
+  for (const e of sortByPriority(local.filter((e) => e.place !== "done")).slice(0, 15)) box.append(row(e));
+  for (const e of local.filter((e) => e.place === "done").slice(0, 5)) box.append(row(e, { noPill: true }));
+  for (const p of mine) box.append(myProjectRow(p));
+  page.append(h("section", null, h("h2", null, "On this page", h("span", { class: "count" }, String(local.length + mine.length))), box));
+  if (evs.length) page.append(meetingsSection("Meetings", evs, true, ""));
+  for (const name of ["Slack", "Gmail", "Asana"]) {
+    const r = S.search.remote[name] || { status: S.mcp ? "load" : "err", msg: "not available here" };
+    const b = h("div");
+    if (r.status === "load") b.append(h("p", { class: "empty" }, h("span", { class: "spin", "aria-hidden": "true" }), " Searching " + name + "…"));
+    else if (r.status === "err") b.append(h("p", { class: "empty" }, "Couldn't search " + name + ": " + r.msg + "."));
+    else if (!r.rows.length) b.append(h("p", { class: "empty" }, "No matches in " + name + "."));
+    else for (const x of r.rows) {
+      const due = dueLabel(x.due);
+      b.append(h("div", { class: "sres" },
+        h("div", { class: "title" }, x.url ? h("a", { href: x.url, target: "_blank", rel: "noopener" }, x.title) : x.title),
+        x.where ? h("div", { class: "snip" }, x.where) : null,
+        h("div", { class: "meta-row" }, srcSpan(name), x.who ? h("span", null, icon("i-user"), x.who) : null,
+          due ? h("span", { class: due.late ? "hot" : "" }, icon("i-cal"), due.text) : null, x.date ? h("span", null, ago(x.date)) : null, openLink(x.url))));
+    }
+    page.append(h("section", null, h("h2", null, "In " + name, r.status === "ok" ? h("span", { class: "count" }, String(r.rows.length)) : null), b));
+  }
+}
+$("search").addEventListener("input", () => setSearch($("search").value));
+$("searchForm").addEventListener("submit", (ev) => { ev.preventDefault(); clearTimeout(searchTimer); if (S.search) runRemote(S.search.q); if (!wide()) $("shell").classList.remove("open"); });
+$("searchClear").addEventListener("click", () => { setSearch(""); $("search").focus(); });
+$("search").addEventListener("keydown", (ev) => { if (ev.key === "Escape") { setSearch(""); } });
+$("searchBtn").addEventListener("click", () => {
+  if (wide()) { if (!S.sideOpen) { S.sideOpen = true; store.set("side", true); applySide(); } }
+  else $("shell").classList.add("open");
+  setTimeout(() => $("search").focus(), 60);
+});
+function findInSlack(e) {
+  const words = keywordsOf(e.title + " " + (e.detail || ""), 3);
+  setSearch(words.join(" ") || clip(e.title, 40), true);
+  window.scrollTo({ top: 0 });
+}
+
+/* ---------- Turn an item into an Asana task ---------- */
+async function loadTeam() {
+  if (S.team || !S.mcp) return;
+  S.team = [];
+  try {
+    const r = await S.mcp.callTool("Asana", "get_users", { limit: 100 });
+    S.team = ((payloadOf(r) || {}).data || []).filter((u) => u.gid !== ME_ASANA && u.name && !/@/.test(u.name)).sort((a, b) => a.name.localeCompare(b.name));
+  } catch { S.team = []; }
+  render();
+}
+function asanaForm(e) {
+  const k = hashKey(e.key);
+  // Keep what Justin typed or picked across background redraws.
+  const d = S.asanaDraft[e.key] ||= { name: clip(e.a || e.title, 200), who: "me", due: "" };
+  const name = h("input", { type: "text", id: "as-name-" + k, value: d.name, "aria-label": "Task name", required: true, oninput: () => { d.name = name.value; } });
+  const who = h("select", { id: "as-who-" + k, "aria-label": "Assign to", onchange: () => { d.who = who.value; } }, h("option", { value: "me" }, "Me"),
+    ...(S.team || []).map((u) => h("option", { value: u.gid }, u.name)));
+  who.value = [...who.options].some((o) => o.value === d.who) ? d.who : "me";
+  const due = h("input", { type: "date", id: "as-due-" + k, value: d.due, "aria-label": "Due date (optional)", onchange: () => { d.due = due.value; } });
+  const busyNow = S.asanaBusy.has(e.key);
+  return h("form", { class: "asform", onsubmit: (ev) => { ev.preventDefault(); createAsana(e, name.value.trim(), who.value, due.value, who.options[who.selectedIndex].text); } },
+    h("label", null, "Task name", name),
+    h("div", { class: "row2" }, h("label", null, "Assign to", who), h("label", null, "Due date (optional)", due)),
+    S.team && !S.team.length ? h("div", { class: "why" }, "Loading your team…") : null,
+    S.asanaErr[e.key] ? h("div", { class: "err" }, S.asanaErr[e.key]) : null,
+    h("div", { class: "tools" },
+      h("button", { class: "mini primary", type: "submit", disabled: busyNow }, busyNow ? "Creating…" : "Create in Asana"),
+      h("button", { class: "mini", type: "button", onclick: () => { S.asanaOpen.delete(e.key); render(); } }, "Cancel")));
+}
+function asanaNotes(e) {
+  const url = e.url || urlForKey(e.key);
+  return [e.title, e.detail && e.detail !== e.title ? e.detail : "", "From " + e.src + (e.who ? " (" + e.who + ")" : "") + (url ? ": " + url : ""), "Created from Daily Do Do."].filter(Boolean).join("\n\n");
+}
+async function createAsana(e, name, assignee, due, whoName) {
+  if (!name || !S.mcp || S.asanaBusy.has(e.key)) return;
+  S.asanaBusy.add(e.key); delete S.asanaErr[e.key]; render();
+  try {
+    const task = { name, assignee: assignee || "me", notes: asanaNotes(e) };
+    if (due) task.due_on = due;
+    const r = await S.mcp.callTool("Asana", "create_tasks", { tasks: [task] });
+    const p = payloadOf(r) || {};
+    if (Array.isArray(p.failed) && p.failed.length && !(p.succeeded || []).length) throw { code: "tool_error", message: clip(JSON.stringify(p.failed[0]), 120) };
+    const made = (p.succeeded || [])[0] || {};
+    const gid = String(made.gid || (made.task && made.task.gid) || made.task_gid || "");
+    const url = made.permalink_url || (made.task && made.task.permalink_url) || (gid ? "https://app.asana.com/0/0/" + gid : "");
+    const mine = !assignee || assignee === "me";
+    const label = mine ? "you" : whoName;
+    // The Asana task takes over from the original item.
+    if (e.manual) saveItem(e.id, { done: true, doneAt: nowIso() }, "Turned into an Asana task for " + label);
+    else { S.cleared[e.key] = Date.now(); saveCleared(); saveOv(e.key, { ...snap(e), done: true, doneAt: nowIso(), asana: { gid, url, assignee: label } }, "Turned into an Asana task for " + label); }
+    if (S.plan && gid) {
+      const swap = (x) => x && x.key === e.key ? { ...x, key: (mine ? "as:" : "ad:") + gid, src: "Asana", url, done: false } : x;
+      S.plan.one = swap(S.plan.one); S.plan.top3 = (S.plan.top3 || []).map(swap); savePlan(0);
+    }
+    S.asanaOpen.delete(e.key); delete S.asanaDraft[e.key];
+    S.mcp.invalidate("Asana").catch(() => {});
+    say(mine ? "Created in Asana for you" : "Created in Asana for " + whoName + ". It's in Waiting On.");
+  } catch (err) {
+    S.asanaErr[e.key] = "Couldn't create it: " + errCopy(err, "Asana") + ".";
+  } finally { S.asanaBusy.delete(e.key); render(); }
+}
+
+/* ---------- Capture: type anything, Claude files it ---------- */
+function newItemId() { return "i-" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+function newProjectId() { return "p-" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+function dueWords(due) { const l = dueLabel(due); return l ? ", " + l.text.charAt(0).toLowerCase() + l.text.slice(1) : ""; }
+function addTask(title, list, due, text, extra) {
+  const id = newItemId();
+  const where = LISTS[list] ? list : "week";
+  const wasFull = isFull(where, "it:" + id);
+  saveItem(id, { title: clip(title, 200), list: where, due: /^\d{4}-\d{2}-\d{2}$/.test(due || "") ? due : null, by: "Justin", createdAt: nowIso(), done: false, movedBy: "justin", movedAt: nowIso(), ...(extra || {}) }, text);
+  checkFull(where, "it:" + id, wasFull);
+  return id;
+}
+async function captureText(text) {
+  text = String(text || "").trim();
+  if (!text) return false;
+  if (!S.sample) {
+    const id = addTask(text, "today", "", "Captured");
+    say("Added to Today", () => saveItem(id, { list: "removed" }, "Undone"));
+    return true;
+  }
+  await loadTeam();
+  const open = entries().filter((e) => e.place && LISTS[e.place]).slice(0, 80);
+  const mine = myProjects();
+  const now = new Date().toLocaleString("en-US", { timeZone: TZ, weekday: "long", month: "long", day: "numeric", year: "numeric" });
+  const prompt = `You file one quick capture for Justin Eckrich, CEO of Appliance Repair Marketing (ARM). Today is ${now} (Eastern), ${S.today}.
+
+He typed: """${clip(text, 2000)}"""
+
+Decide what it is:
+- "asana": he wants someone else to do it ("have X...", "ask X to...", "X needs to...", "delegate to X"), or he says "in Asana". "assignee" = that person's id from Team, or "me" if he wants it in Asana for himself. If the person is not on Team, use "task" instead.
+- "project": he calls it a project, or it is clearly a multi-step initiative with no single next action.
+- "note": information rather than an action ("X said...", "FYI", "remember that...", an update on existing work). "target" = the id (E# or P#) it belongs to from Existing, or "" if none fits.
+- "task": anything he needs to do himself.
+"title": short and in his own words; for task and asana start with a verb and keep names and specifics.
+"list" (task only): "today" (due today or urgent), "week" (this week, or a date within 7 days), "backlog" (someday, an idea), "waiting" (he is waiting on someone).
+"due": YYYY-MM-DD if he named a day or date ("Friday" means the coming Friday), else "".
+"note": for a note, the note text, tidied.
+
+Team (id | name):
+${(S.team || []).map((u) => u.gid + " | " + u.name).join("\n") || "(not loaded)"}
+
+Existing (id | title):
+${[...open.map((e, i) => "E" + (i + 1) + " | " + clip(e.title, 120)), ...mine.map((p, i) => "P" + (i + 1) + " | " + clip(p.name, 120))].join("\n") || "(none)"}
+
+Reply with only JSON: {"type":"task","title":"...","list":"week","due":"","assignee":"","target":"","note":""}`;
+  const r = await S.sample.json(prompt, { modelTier: "quick", cache: false });
+  const type = r && r.type, title = clip((r && r.title) || text, 200), due = (r && r.due) || "";
+  if (type === "asana") {
+    const assignee = String((r && r.assignee) || "");
+    const person = (S.team || []).find((u) => u.gid === assignee);
+    if (assignee === "me" || person) {
+      const task = { name: title, assignee: person ? person.gid : "me", notes: text + "\n\nCaptured in Daily Do Do." };
+      if (/^\d{4}-\d{2}-\d{2}$/.test(due)) task.due_on = due;
+      const res = payloadOf(await S.mcp.callTool("Asana", "create_tasks", { tasks: [task] })) || {};
+      if (Array.isArray(res.failed) && res.failed.length && !(res.succeeded || []).length) throw { code: "tool_error", message: "Asana didn't create the task" };
+      S.mcp.invalidate("Asana").catch(() => {});
+      say(person ? "Created in Asana for " + person.name + dueWords(due) + ". It's in Waiting On." : "Created in Asana for you" + dueWords(due) + ".");
+      return true;
+    }
+  }
+  if (type === "project") {
+    const id = newProjectId();
+    saveProject(id, { name: title, from: { src: "You", title: text }, createdAt: nowIso(), archived: false }, "Made a project");
+    say("New project: " + clip(title, 40), () => saveProject(id, { archived: true }, "Undone"), null, { label: "See it", fn: () => go("projects") });
+    return true;
+  }
+  if (type === "note") {
+    const m = /^([EP])(\d+)$/.exec(String((r && r.target) || "")), note = clip((r && r.note) || text, 1000);
+    const e = m && m[1] === "E" ? open[Number(m[2]) - 1] : null, pj = m && m[1] === "P" ? mine[Number(m[2]) - 1] : null;
+    if (e) { addNote(e, note); S.expanded.add(e.key); say("Note added to: " + clip(e.title, 40), null, null, { label: "See it", fn: () => { if (S.search) setSearch(""); go(e.place); } }); return true; }
+    if (pj) { saveProject(pj.id, {}, note); S.openProj.add(pj.id); say("Note added to project: " + clip(pj.name, 36), null, null, { label: "See it", fn: () => go("projects") }); return true; }
+    const id = addTask(title, "backlog", "", "Captured as a note", { note });
+    say("Saved to Backlog", () => saveItem(id, { list: "removed" }, "Undone"));
+    return true;
+  }
+  const list = LISTS[r && r.list] ? r.list : "week";
+  const id = addTask(title, list, due, "Captured");
+  const cur = () => (S.items[id] || {}).list || list;
+  say("Added to " + LISTS[list] + dueWords(due), () => saveItem(id, { list: "removed" }, "Undone"), null,
+    { label: "Move", fn: () => { if (S.search) setSearch(""); S.moving.add("it:" + id); go(cur()); } });
+  return true;
+}
+let capturing = false;
+$("captureForm").addEventListener("submit", async (ev) => {
+  ev.preventDefault();
+  const inp = $("capture"), text = inp.value.trim();
+  if (!text || capturing) return;
+  capturing = true; $("captureSend").disabled = true; inp.placeholder = "Filing it…";
+  try { if (await captureText(text)) inp.value = ""; }
+  catch (e) { const m = planErrCopy(e, "Capturing"); say(m && m !== "off" ? m + " Your text is still in the box." : "Couldn't file that: " + errCopy(e, "Claude") + ". Your text is still in the box.", null, 9000); }
+  finally { capturing = false; $("captureSend").disabled = false; inp.placeholder = "Capture a task, project or note…"; }
+});
+
+// Refresh reads new lines in the day's Notes and turns the to-dos into tasks. Each line is only read once.
+async function notesToTasks() {
+  if (!S.sample || !S.plan || !S.plan.notes) return 0;
+  const seen = new Set(S.plan.notesSeen || []);
+  const lines = S.plan.notes.split(/\n+/).map((l) => l.trim()).filter(Boolean);
+  const fresh = lines.filter((l) => !seen.has(hashKey(l)));
+  if (!fresh.length) return 0;
+  const now = new Date().toLocaleString("en-US", { timeZone: TZ, weekday: "long", month: "long", day: "numeric", year: "numeric" });
+  const res = await S.sample.json(`Justin Eckrich (CEO of Appliance Repair Marketing) wrote these lines in his notes today. It is ${now} (Eastern), ${S.today}.
+Pull out only the things Justin himself needs to do. Skip plain information, reminders of things already done, and anything someone else owns.
+For each: "title" (verb first, his words, keep names and specifics), "list" ("today", "week" or "backlog"), "due" (YYYY-MM-DD if a day or date is given, else "").
+
+Notes:
+${fresh.map((l, i) => i + 1 + ". " + clip(l, 400)).join("\n")}
+
+Reply with only JSON: {"tasks":[{"title":"...","list":"week","due":""}]}`, { modelTier: "quick", cache: false });
+  const tasks = ((res && res.tasks) || []).slice(0, 10);
+  for (const t of tasks) if (t && t.title) addTask(t.title, t.list, t.due, "Pulled from your notes", { from: "notes" });
+  S.plan.notesSeen = [...seen, ...fresh.map(hashKey)].slice(-300);
+  savePlan(0);
+  return tasks.length;
+}
+
+/* ---------- Ask Claude: open a new Claude chat with the item's context filled in ---------- */
+const ARTIFACT_URL = "https://claude.ai/artifact/4KnrRr7gBXuH35DZ4oqAAG";
+function planRole(key) {
+  if (!key || !S.plan || !isToday()) return "";
+  if (S.plan.one && S.plan.one.key === key && S.plan.one.title) return "It's my One Thing today.";
+  return (S.plan.top3 || []).some((x) => x && x.key === key && x.title) ? "It's in my Top 3 today." : "";
+}
+function historyLines(hist) {
+  return (hist || []).slice(-8).map((x) => "- " + new Date(Date.parse(x.at)).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: TZ }) + " · " + (x.by || "Justin") + ": " + clip(x.text, 200));
+}
+function askText(o) {
+  const lines = ["I'm working on this from my Daily Do Do workspace and want your help with it.", "", (o.kind || "Item") + ": " + o.title];
+  if (o.next && o.next !== o.title) lines.push("Next step: " + o.next);
+  if (o.src) lines.push("From: " + (o.src === "You" ? "added by me" : o.src) + (o.who ? " (" + o.who + ")" : "") + (o.url ? " " + o.url : ""));
+  const where = [o.list ? "On my " + o.list + " list" : "", o.p != null ? "priority P" + o.p : "", o.due ? dueLabel(o.due) && dueLabel(o.due).text : ""].filter(Boolean).join(", ");
+  if (where) lines.push(where + ".");
+  if (o.role) lines.push(o.role);
+  if (o.detail && o.detail !== o.title) lines.push("Details: " + clip(o.detail, 500));
+  const hist = historyLines(o.history);
+  if (hist.length) lines.push("History:", ...hist);
+  lines.push("", "This came from Daily Do Do (" + ARTIFACT_URL + "). If we make progress or finish it, log it there with the Daily Do Do workspace skill (" + o.ref + ").", "", "My question: ");
+  let text = lines.join("\n");
+  if (text.length > 3500) text = text.slice(0, 3400) + "…\n\nMy question: ";
+  return text;
+}
+function askForEntry(e) {
+  const ov = S.ov[e.key] || {};
+  return askText({ title: e.title, next: e.a, src: e.src, who: e.who, url: e.url || urlForKey(e.key), list: LISTS[e.place] || (e.place === "done" ? "Done" : ""),
+    p: e.place !== "done" ? e.p : null, due: e.due, role: planRole(e.key), detail: e.detail || e.project,
+    history: e.manual ? (S.items[e.id] || {}).history : ov.history, ref: e.manual ? "workspace item id: " + e.id : "item key: " + e.key });
+}
+function askForSlot(slot, which) {
+  const e = slot.key ? entries().find((x) => x.key === slot.key) : null;
+  if (e) return askForEntry(e);
+  return askText({ title: slot.title, next: "", src: slot.src, url: slot.url, role: which === "one" ? "It's my One Thing today." : "It's in my Top 3 today.",
+    detail: slot.why, ref: slot.key ? "item key: " + slot.key : "it's in today's plan (plans/" + S.date + ")" });
+}
+function askForProject(p) {
+  const f = p.from || {};
+  return askText({ kind: "Project", title: p.name, src: f.src, url: f.url, detail: f.title, history: p.history, ref: "project id: " + p.id });
+}
+function askLink(text) { return "https://claude.ai/new?q=" + encodeURIComponent(text); }
+function askTools(textFn, continueUrl) {
+  const text = textFn();
+  const out = [];
+  if (continueUrl) out.push(h("a", { class: "mini", href: continueUrl, target: "_blank", rel: "noopener" }, "Continue in Claude"));
+  out.push(h("a", { class: "mini", href: askLink(text), target: "_blank", rel: "noopener", title: "Opens a new Claude chat with this item filled in" }, "Ask Claude"));
+  out.push(h("button", { class: "mini", type: "button", "aria-label": "Copy this item for Claude", onclick: () => {
+    try { navigator.clipboard.writeText(text).then(() => say("Copied. Paste it into any Claude chat."), () => say("Couldn't copy here. Use Ask Claude instead.", null, 5000)); }
+    catch { say("Couldn't copy here. Use Ask Claude instead.", null, 5000); }
+  } }, "Copy"));
+  return out;
+}
+const isClaudeChat = (url) => /^https:\/\/claude\.ai\/chat\//.test(url || "");
+
+/* ---------- Priority engine: lanes, score, caps, reshuffle ----------
+   Lanes: acquire (new revenue), retention (revenue we have), management (internal), life (personal, outside the caps).
+   Auto values come from Claude and live in plans/<date>.map[key] as l, i, e, o, x. Justin's own choices live on
+   overrides/<key> or items/<id> as lane + laneBy "justin", impact/impactBy, effort/effortBy, owner, pinned, movedBy/movedAt, keptAt. */
+const LANES = ["acquire", "retention", "management", "life"];
+const LANE_NAME = { acquire: "Acquire", retention: "Retention", management: "Management", life: "Life" };
+const WORK_LANES = ["acquire", "retention", "management"];
+const CAPS = { today: 5, week: 25, backlog: 25, parked: Infinity };
+const LIFE_CAPS = { today: 3, week: 5, backlog: Infinity, parked: Infinity };
+const DOWN = { today: "week", week: "backlog", backlog: "parked" };
+const CAPPED = ["today", "week", "backlog", "parked"];
+const DEFAULT_MIX = { acquire: 50, retention: 35, management: 15 };
+const PROTECT_MS = 7 * 864e5;
+const clampInt = (v, lo, hi) => { const n = Math.round(Number(v)); return Number.isFinite(n) ? Math.max(lo, Math.min(hi, n)) : null; };
+function ownDoc(e) { return (e.manual ? S.items[e.id] : S.ov[e.key]) || {}; }
+function enrich(e) {
+  const t = planEntry(e.key) || {}, own = ownDoc(e);
+  e.lane = own.laneBy === "justin" && LANES.includes(own.lane) ? own.lane : LANES.includes(t.l) ? t.l : LANES.includes(own.lane) ? own.lane : null;
+  e.laneBy = own.laneBy === "justin" ? "justin" : "auto";
+  e.impact = (own.impactBy === "justin" && clampInt(own.impact, 1, 5)) || clampInt(t.i, 1, 5) || clampInt(own.impact, 1, 5) || (e.p != null ? [5, 4, 3, 2][e.p] : 2);
+  e.effort = (own.effortBy === "justin" && clampInt(own.effort, 1, 3)) || clampInt(t.e, 1, 3) || clampInt(own.effort, 1, 3) || 2;
+  e.owner = own.owner || (e.kind === "out" && e.who ? e.who : "") || t.o || "justin";
+  e.only = !!t.x;
+  e.pinned = !!own.pinned;
+  e.movedRecently = own.movedBy === "justin" && Date.now() - (Date.parse(own.movedAt) || 0) < PROTECT_MS;
+  e.keptAt = Date.parse(own.keptAt) || 0;
+}
+const isMine = (e) => !e.owner || String(e.owner).toLowerCase() === "justin";
+const isProtected = (e) => e.pinned || e.movedRecently;
+function urgencyOf(due) {
+  const n = daysUntil(due);
+  if (n == null) return 1;
+  if (n <= 0) return 5;
+  const dow = new Date(ymd(0) + "T12:00:00Z").getUTCDay() || 7;   // Monday 1 … Sunday 7
+  const toSunday = 7 - dow;
+  if (n <= toSunday) return 4;
+  if (n <= toSunday + 7) return 3;
+  return 1;
+}
+function scoreOf(e, adj) {
+  return e.impact * 2 + urgencyOf(e.due) + (isMine(e) && e.only ? 2 : 0) - e.effort + ((adj && adj[e.lane]) || 0);
+}
+const byScore = (a, b) => (b.score - a.score) || ((daysUntil(a.due) ?? 99) - (daysUntil(b.due) ?? 99)) || ((b.date || 0) - (a.date || 0));
+function mixTarget() {
+  const m = (S.settings && S.settings.mix) || DEFAULT_MIX;
+  return WORK_LANES.reduce((o, l) => (o[l] = Number(m[l]) || 0, o), {});
+}
+// Mix of Justin's open work on Today (including One Thing and Top 3) and This Week. Life is left out.
+function computeMix(list) {
+  const counts = { acquire: 0, retention: 0, management: 0 };
+  for (const e of list) if ((e.place === "today" || e.place === "week") && isMine(e) && WORK_LANES.includes(e.lane)) counts[e.lane]++;
+  const total = counts.acquire + counts.retention + counts.management;
+  const pct = {}, adj = {}, T = mixTarget();
+  for (const l of WORK_LANES) {
+    pct[l] = total ? Math.round(counts[l] * 100 / total) : 0;
+    adj[l] = !total ? 0 : pct[l] < T[l] - 5 ? 2 : pct[l] > T[l] + 5 ? -2 : 0;
+  }
+  return { counts, total, pct, adj, target: T };
+}
+function planKeys() {
+  const s = new Set();
+  if (S.plan && isToday()) for (const x of [S.plan.one, ...(S.plan.top3 || [])]) if (x && x.key && x.title) s.add(x.key);
+  return s;
+}
+// Fill each list to its cap from the list below, push overflow down, keep pinned and recently hand-moved items where Justin put them.
+function cascade(items, caps) {
+  const bucket = Object.fromEntries(CAPPED.map((l) => [l, { prot: [], free: [] }]));
+  for (const e of items) { e.home = e.place; (isProtected(e) ? bucket[e.place].prot : bucket[e.place].free).push(e); }
+  CAPPED.forEach((l, i) => {
+    const b = bucket[l]; b.free.sort(byScore);
+    const room = Math.max(0, caps[l] - b.prot.length);
+    if (b.free.length > room && i < CAPPED.length - 1) bucket[CAPPED[i + 1]].free.push(...b.free.splice(room));
+  });
+  for (let i = 0; i < CAPPED.length - 1; i++) {
+    const b = bucket[CAPPED[i]], nb = bucket[CAPPED[i + 1]];
+    nb.free.sort(byScore);
+    while (b.prot.length + b.free.length < caps[CAPPED[i]] && nb.free.length) b.free.push(nb.free.shift());
+  }
+  for (const l of CAPPED) for (const e of [...bucket[l].prot, ...bucket[l].free]) e.place = l;
+}
+function allocate(list) {
+  const inPlanNow = planKeys();
+  for (const e of list) {
+    if (!e.place || e.ghost) continue;
+    // Owned by someone else: it's on their plate, so it waits and stops counting against Justin's caps.
+    if (!isMine(e) && CAPPED.includes(e.place) && !(ownDoc(e).list) && !e.manual) e.place = "waiting";
+  }
+  const mix = computeMix(list);
+  for (const e of list) if (!e.ghost) e.score = scoreOf(e, mix.adj);
+  const pool = list.filter((e) => CAPPED.includes(e.place) && !inPlanNow.has(e.key));
+  const caps = { ...CAPS };
+  if (S.swap && caps[S.swap.list] !== Infinity) caps[S.swap.list] += 1;
+  cascade(pool.filter((e) => e.lane !== "life"), caps);
+  cascade(pool.filter((e) => e.lane === "life"), LIFE_CAPS);
+  S.mix = computeMix(list);
+}
+function workOn(list, place) { return list.filter((e) => e.place === place && e.lane !== "life" && !inPlan(e.key)); }
+function lifeOn(list, place) { return list.filter((e) => e.place === place && e.lane === "life" && !inPlan(e.key)); }
+
+/* ---------- lane chip, pin, impact and effort ---------- */
+function setOwn(e, patch, text) { if (e.manual) saveItem(e.id, patch, text); else saveOv(e.key, { ...snap(e), ...patch }, text); }
+function cycleLane(e) {
+  const next = LANES[(LANES.indexOf(e.lane) + 1) % LANES.length];
+  setOwn(e, { lane: next, laneBy: "justin" }, "Lane set to " + LANE_NAME[next]);
+}
+function laneChip(e) {
+  if (!e || e.ghost || e.place === "done") return null;
+  return h("button", { type: "button", class: "lane-chip" + (e.lane ? " lane-" + e.lane : " lane-none"), title: (e.laneBy === "justin" ? "You set this lane. " : "Auto-sorted. ") + "Tap to change.",
+    "aria-label": "Lane: " + (e.lane ? LANE_NAME[e.lane] : "not sorted yet") + ". Tap to change.", onclick: () => cycleLane(e) }, e.lane ? LANE_NAME[e.lane] : "Sort");
+}
+function pinButton(e) {
+  return h("button", { class: "mini", type: "button", "aria-pressed": String(!!e.pinned), title: "Pinned items stay put when the lists reshuffle",
+    onclick: () => setOwn(e, { pinned: !e.pinned }, e.pinned ? "Unpinned" : "Pinned") }, e.pinned ? "📌 Pinned" : "Pin");
+}
+function scaleRow(e) {
+  const pick = (label, field, max, cur) => h("span", { class: "scale" }, h("span", { class: "lbl" }, label),
+    ...Array.from({ length: max }, (_, i) => h("button", { class: "mini", type: "button", "aria-pressed": String(cur === i + 1), "aria-label": label + " " + (i + 1),
+      onclick: () => setOwn(e, { [field]: i + 1, [field + "By"]: "justin" }, label + " set to " + (i + 1)) }, String(i + 1))));
+  return h("div", { class: "tools" }, pick("Impact", "impact", 5, e.impact), pick("Effort", "effort", 3, e.effort),
+    h("span", { class: "lbl" }, "Score " + (e.score != null ? e.score : "–")));
+}
+
+/* ---------- full lists: swap prompt ---------- */
+function capFor(list, life) { return (life ? LIFE_CAPS : CAPS)[list]; }
+// Called before an add or move: was the list already at its cap?
+function isFull(list, key) {
+  if (!CAPS[list] || CAPS[list] === Infinity || (S.swap && S.swap.list === list)) return false;
+  const rows = workOn(entries(), list);
+  return !rows.some((e) => e.key === key) && rows.length >= CAPS[list];
+}
+// While the swap prompt is open, the list holds one extra so nothing gets bumped before Justin picks.
+function checkFull(list, addedKey, wasFull) {
+  if (!wasFull) return;
+  S.swap = { list, addedKey };
+  render();
+}
+function swapBox(list, rows) {
+  if (!S.swap || S.swap.list !== list) return null;
+  if (rows.length <= CAPS[list]) { S.swap = null; return null; }
+  const lowest = rows.filter((e) => e.key !== S.swap.addedKey && !e.pinned).slice().sort((a, b) => a.score - b.score).slice(0, 3);
+  return h("div", { class: "notice" }, h("span", null, "This list is full. Swap out:"),
+    h("div", { class: "tools", style: "margin:0" },
+      ...lowest.map((e) => h("button", { class: "mini", type: "button", title: "Moves it to " + LISTS[DOWN[list]], onclick: () => { moveTo(e, DOWN[list]); S.swap = null; render(); } }, clip(e.title, 40))),
+      h("button", { class: "mini", type: "button", title: "The lowest-scored item moves down a list", onclick: () => { S.swap = null; render(); } }, "Let it reshuffle")));
+}
+function capCount(n, cap) { return h("span", { class: "cap-count" + (n >= cap ? " full" : "") }, n + " / " + cap); }
+
+/* ---------- mix bar ---------- */
+function mixBar() {
+  const m = S.mix;
+  if (!m) return null;
+  const T = m.target;
+  const bar = h("div", { class: "mix-bar", role: "img", "aria-label": "Mix of open work: Acquire " + m.pct.acquire + "%, Retention " + m.pct.retention + "%, Management " + m.pct.management + "%" },
+    ...WORK_LANES.map((l) => h("span", { class: "mix-" + l, style: "width:" + (m.total ? m.counts[l] * 100 / m.total : 0) + "%" })));
+  const wrap = h("div", { class: "mix-wrap" }, bar,
+    h("span", { class: "mix-target-tick", style: "left:calc(" + T.acquire + "% - 1px)" }),
+    h("span", { class: "mix-target-tick", style: "left:calc(" + (T.acquire + T.retention) + "% - 1px)" }));
+  const part = (l) => {
+    const d = m.pct[l] - T[l];
+    return LANE_NAME[l] + " " + m.pct[l] + "%" + (d < -5 ? " (target " + T[l] + "%)" : d > 5 ? " (over by " + d + " points)" : "");
+  };
+  const label = m.total ? WORK_LANES.map(part).join(" · ") : "No sorted work on Today or This Week yet.";
+  return h("div", { class: "mix" }, wrap, h("p", { class: "mix-label" }, label));
+}
+
+/* ---------- settings ---------- */
+function settingsPanel() {
+  const T = mixTarget();
+  const inputs = WORK_LANES.map((l) => h("input", { type: "number", min: "0", max: "100", step: "1", id: "mix-" + l, value: String(T[l]), "aria-label": LANE_NAME[l] + " target percent" }));
+  const msg = h("p", { class: "mix-label", id: "mixMsg" });
+  const sum = () => inputs.reduce((s, i) => s + (Number(i.value) || 0), 0);
+  const update = () => { const n = sum(); msg.textContent = n === 100 ? "Adds up to 100." : "Adds up to " + n + ". It needs to be 100."; msg.style.color = n === 100 ? "" : "var(--brand-soft)"; };
+  inputs.forEach((i) => i.addEventListener("input", update)); update();
+  return h("form", { class: "settings", onsubmit: (ev) => {
+    ev.preventDefault();
+    if (sum() !== 100) { update(); return; }
+    S.settings = { ...(S.settings || {}), mix: Object.fromEntries(WORK_LANES.map((l, k) => [l, Number(inputs[k].value)])) };
+    queueSet("state/settings", clone(S.settings), 0); S.settingsOpen = false; renderSettings(); render(); say("Target mix saved");
+  } }, h("span", { class: "lbl" }, "Target mix"),
+    ...WORK_LANES.map((l, k) => h("label", null, h("span", { class: "lane-chip lane-" + l }, LANE_NAME[l]), inputs[k], "%")),
+    msg, h("div", { class: "tools", style: "margin:0" }, h("button", { class: "mini primary", type: "submit" }, "Save"),
+      h("button", { class: "mini", type: "button", onclick: () => { S.settingsOpen = false; renderSettings(); } }, "Cancel")));
+}
+function renderSettings() {
+  const box = $("settingsBox"); box.replaceChildren();
+  if (S.settingsOpen) box.append(settingsPanel());
+  $("gearBtn").setAttribute("aria-expanded", String(!!S.settingsOpen));
+}
+
+/* ---------- morning sweep: cut or hand off ---------- */
+const CUT_LABEL = { delegate: (c) => "Delegate to " + (c.to || "someone"), backlog: () => "Move to Backlog", park: () => "Park", drop: () => "Drop" };
+function cutsFor(all) {
+  const byKey = new Map(all.map((e) => [e.key, e]));
+  return ((S.digest && S.digest.cuts) || []).map((c) => ({ c, e: byKey.get(c.key) }))
+    .filter(({ c, e }) => e && CUT_LABEL[c.action] && e.place && e.place !== "done" && !["dropped", "removed", "project"].includes(e.place)
+      && !(e.keptAt && Date.now() - e.keptAt < PROTECT_MS) && !e.pinned).slice(0, 5);
+}
+async function doCut(c, e) {
+  if (c.action === "backlog") moveTo(e, "backlog");
+  else if (c.action === "park") moveTo(e, "parked");
+  else if (c.action === "drop") { if (e.manual) saveItem(e.id, { list: "removed" }, "Dropped as a duplicate"); else saveOv(e.key, { ...snap(e), list: "dropped" }, "Dropped as a duplicate"); say("Dropped: " + clip(e.title, 40)); }
+  else if (c.action === "delegate") {
+    await loadTeam();
+    const first = String(c.to || "").trim().toLowerCase().split(/\s+/)[0];
+    const u = first && (S.team || []).find((x) => x.name.toLowerCase().split(/\s+/)[0] === first);
+    if (u) createAsana(e, clip(e.a || e.title, 200), u.gid, "", u.name);
+    else { S.asanaOpen.add(e.key); go(e.place); say("Pick who gets it in the Asana form.", null, 5000); }
+  }
+}
+function keepCut(e) { setOwn(e, { keptAt: nowIso() }, "Kept (sweep suggestion dismissed)"); say("Kept. It won't be suggested again for 7 days."); }
+function cutsSection(all) {
+  const list = cutsFor(all);
+  if (!list.length) return null;
+  const open = !!S.cutsOpen;
+  const head = h("button", { class: "projhead", type: "button", "aria-expanded": String(open), onclick: () => { S.cutsOpen = !open; render(); }, style: "padding:0" },
+    h("h2", { style: "margin:0" }, "Cut or hand off", h("span", { class: "count" }, String(list.length))), h("span", { class: "chev", "aria-hidden": "true" }, open ? "–" : "+"));
+  const box = h("div");
+  if (open) for (const { c, e } of list) box.append(h("div", { class: "sres" },
+    h("div", { class: "title" }, e.url ? h("a", { href: e.url, target: "_blank", rel: "noopener" }, e.title) : e.title),
+    h("div", { class: "snip" }, h("b", null, CUT_LABEL[c.action](c) + ". "), clip(c.reason || "", 220)),
+    h("div", { class: "tools" }, laneChip(e), h("button", { class: "mini primary", type: "button", onclick: () => doCut(c, e) }, "Do it"),
+      h("button", { class: "mini", type: "button", onclick: () => keepCut(e) }, "Keep"))));
+  return h("section", { class: "cuts" }, head, box);
+}
+
+/* ---------- lanes for items Claude hasn't sorted yet (plans made before lanes existed) ---------- */
+const TEAM_NAMES = "Afzal, Brooklyn, Emily, Atique, Nauman, Maddy, Mujeeb, Samran, Wasif, Oleg, Teresa";
+let laneTimer = null;
+function maybeLaneSort() {
+  if (S.laneSorting || S.laneSortTried || !S.sample || !S.plan || !isToday() || !sourcesIn() || S.planning) return;
+  clearTimeout(laneTimer);
+  laneTimer = setTimeout(laneSort, 1500);
+}
+async function laneSort() {
+  if (S.laneSorting || S.laneSortTried || !S.plan) return;
+  const missing = planCandidates().filter((i) => { const t = planEntry(i.key); return !(t && t.l) && !(t && t.b === "drop"); }).slice(0, 120);
+  S.laneSortTried = true;
+  if (!missing.length) return;
+  S.laneSorting = true; render();
+  try {
+    const { ids, back } = idMaps(missing);
+    const lines = missing.map((it) => itemLine(it, ids.get(it.key)));
+    let body = lines.join("\n");
+    while (new Blob([body]).size > 40000 && lines.length) { lines.pop(); body = lines.join("\n"); }
+    const res = await S.sample.json(`You sort work for Justin Eckrich, CEO of Appliance Repair Marketing (ARM), into lanes. For every item give:
+${LANE_RULES}
+
+Items (id | source | type | person | title | detail | last activity | due):
+${body}
+
+Reply with only JSON: {"items":[{"id":"G1","l":"acquire","i":4,"e":1,"o":"justin","x":false}]}`, { modelTier: "quick", cache: false });
+    const map = { ...(S.plan.map || {}) };
+    for (const r of (res && res.items) || []) {
+      const it = back[r.id]; if (!it) continue;
+      map[it.key] = { ...(map[it.key] || { b: "week", p: 2, a: "", j: "" }), ...laneFields(r) };
+    }
+    S.plan.map = map; savePlan(0);
+  } catch (e) { const m = planErrCopy(e, "Sorting lanes"); if (m && m !== "off") note(m); }
+  finally { S.laneSorting = false; render(); }
+}
+function laneFields(r) {
+  const o = String(r.o || "justin").trim();
+  return { l: LANES.includes(r.l) ? r.l : undefined, i: clampInt(r.i, 1, 5) || undefined, e: clampInt(r.e, 1, 3) || undefined,
+    o: !o || /^justin/i.test(o) ? "justin" : o.split(/\s+/)[0], x: !!r.x };
+}
+
+/* ---------- db subscriptions ---------- */
+let unsubPlan = null;
+function watchPlan() {
+  if (unsubPlan) { unsubPlan(); unsubPlan = null; }
+  S.plan = undefined; S.confirmReplan = false;
+  render();
+  if (!S.db) { S.plan = null; render(); return; }
+  const d = S.date;
+  unsubPlan = S.db.doc(planPath(d)).onSnapshot((snap) => {
+    if (d !== S.date || busy(planPath(d))) return;  // our own edit is on its way; keep the local copy
+    S.plan = snap.exists ? clone(snap.data()) : null;
+    render();
+    maybePlan();
+    maybeLaneSort();
+  }, (e) => { S.plan = null; S.planErr = "Couldn't read your saved plan (" + ((e && e.code) || "error") + ")."; render(); });
+}
+function watchCollection(name, field) {
+  S.db.collection(name).onSnapshot((q) => {
+    const next = {};
+    for (const d of q.docs) next[d.id] = busy(name + "/" + d.id) ? S[field][d.id] : d.data();
+    for (const k of Object.keys(S[field])) if (busy(name + "/" + k)) next[k] = S[field][k];
+    S[field] = next; render();
+  }, () => {});
+}
+function watchShared() {
+  S.db.doc("digest/latest").onSnapshot((snap) => {
+    S.digest = snap.exists ? snap.data() : {};
+    renderSources(); render(); maybePlan();
+  }, () => { S.digest = S.digest || {}; renderSources(); render(); });
+  S.db.doc("state/cleared").onSnapshot((snap) => {
+    if (busy("state/cleared")) return;
+    S.cleared = (snap.exists && clone(snap.data().map)) || {};
+    for (const [k, t] of Object.entries(S.cleared)) if (Date.now() - t > 30 * 864e5) delete S.cleared[k];
+    render();
+  }, () => {});
+  watchCollection("overrides", "ov");
+  watchCollection("items", "items");
+  watchCollection("projects", "projects");
+  S.db.doc("state/settings").onSnapshot((snap) => {
+    if (busy("state/settings")) return;
+    S.settings = snap.exists ? clone(snap.data()) : null;
+    render();
+  }, () => {});
+  S.db.doc("state/fellowLinks").onSnapshot((snap) => {
+    if (busy("state/fellowLinks")) return;
+    S.fellowLinks = (snap.exists && clone(snap.data().map)) || {};
+    render(); fetchFellowLinks();
+  }, () => {});
+}
+
+/* ---------- planning with Claude ---------- */
+let planTimer = null;
+function maybePlan() {
+  if (!S.sample || S.planning || S.plan !== null || !canPlan() || S.attempted.has(S.date)) return;
+  if (isTomorrow() && nowHour() < EVENING_HOUR) return;   // tomorrow plans itself in the evening, or on request
+  if (S.digest === null || !sourceItems().length) return;
+  clearTimeout(planTimer);
+  const wait = sourcesIn() ? 300 : Math.max(0, PLAN_WAIT_MS - (Date.now() - S.bootAt));
+  planTimer = setTimeout(() => makePlan(S.date, false), wait);
+}
+function dayWords(date) {
+  const w = new Date(date + "T12:00:00Z").toLocaleDateString("en-US", { timeZone: "UTC", weekday: "long", month: "long", day: "numeric" });
+  return date === S.today ? "today, " + w : date === shiftDate(S.today, 1) ? "tomorrow, " + w : w;
+}
+const LANE_RULES = `   "l" lane: "acquire" = brings in new revenue (sales, prospects, follow-up sequences, work agreements, offers, ads that bring in new clients, win-back, ARM Assistant sales); "retention" = protects revenue ARM already has (client results, client landing pages, onboarding, client expectations, client care, anything that keeps an existing client); "management" = internal operations (internal tools, dashboards, team training, hiring, cleanup, billing systems, process docs, this app); "life" = personal (household, family, health, cars, home, personal money).
+   "i" impact: effect on ARM revenue in the next 90 days, 1 (none) to 5 (large). For life items, 1 to 5 by personal importance.
+   "e" effort: 1 (under an hour), 2 (a few hours), 3 (a day or more).
+   "o" owner: "justin" if Justin is the one doing it, including things he still has to hand off. Use a team member's first name only when it is already on their plate (assigned to them or they said they would do it). Team: ${TEAM_NAMES}.
+   "x": true if only Justin can do it.`;
+const LIST_RULES = `   "today": must happen that day: due that day or overdue, someone is blocked on him, money or a client at risk, or it preps that day's meeting.
+   "week": should happen in the next 7 days, or it's the natural next step on active work.
+   "waiting": Justin already answered, delegated, assigned or asked; it's on someone else's plate now.
+   "backlog": gone cold (no activity for weeks), still needs fleshing out, later, someday or maybe.
+   "drop": noise, automated notices, already handled, or a duplicate. Leave drop items OUT of your reply.
+   Gmail (G) is only for sales and money. Keep a Gmail item ONLY if it is (1) a client or prospect writing to, or replying to, Justin or ARM, or (2) an invoice, bill or payment Justin has to pay. Everything else from Gmail is "drop": calendar invites and confirmations, newsletters, app and service notices, receipts that need nothing, and anything from his own team (they talk in Slack). An email Justin sent goes on "waiting" only if it went to a client or prospect; otherwise "drop".
+   For every item you keep, also give:
+${LANE_RULES}`;
+function itemLine(it, id) {
+  const kindTxt = { in: "came in to Justin", out: "Justin sent or assigned it, waiting on others", task: "task on Justin's list", manual: "Justin added it by hand" };
+  const due = it.due ? " | due " + String(it.due).slice(0, 10) : "";
+  const placed = S.ov[it.key] && S.ov[it.key].list ? " | Justin put it in " + (LISTS[S.ov[it.key].list] || "Projects") : "";
+  return clip([id, it.src, kindTxt[it.kind] || it.kind, it.who || "-", it.title, it.detail || it.project || "", ago(it.date)].join(" | ") + due + placed, 320);
+}
+function buildPrompt(date, items, ids, rolls) {
+  const now = new Date().toLocaleString("en-US", { timeZone: TZ, weekday: "long", month: "long", day: "numeric", hour: "numeric", minute: "2-digit" });
+  const lines = items.map((it) => itemLine(it, ids.get(it.key)));
+  const d = S.digest || {};
+  const proj = (d.projects || []).slice(0, 12).map((p, i) => "C" + (i + 1) + " | " + clip(p.name + " | " + (p.status || "") + " | next: " + (p.nextStep || ""), 240));
+  const threads = (d.threads || []).slice(0, 12).map((t, i) => "H" + (i + 1) + " | " + clip(t.title + " | " + (t.openLoop || "") + " | next: " + (t.nextStep || ""), 240));
+  const carry = rolls.map((r, i) => "R" + (i + 1) + " | " + clip(r.title + (r.project ? " | " + r.project : ""), 200));
+  const meet = S.events.filter((e) => e.day === date).map((e) => (e.allDay ? "all day" : clock(e.start)) + " " + e.title + (e.who ? " with " + e.who : "")).join("\n");
+  let body = lines.join("\n");
+  while (new Blob([body]).size > 42000 && lines.length) { lines.pop(); body = lines.join("\n"); }
+  return `You are the chief of staff for Justin Eckrich, founder and CEO of Appliance Repair Marketing (ARM), a lead-generation agency for appliance repair companies. He is stepping back from day-to-day operations (Afzal runs ops) to act as CEO. It is ${now} (Eastern). You are planning his day for ${dayWords(date)}.
+
+He never fills this page in by hand. You decide what matters; he only moves things around if you get it wrong.
+
+Inputs:
+- Items (G Gmail, S Slack, A Asana, T TickTick = his private idea capture, F Fellow meeting action items, M items added to his workspace by him or by Claude).
+- C: his open projects, from an overnight sweep of his Claude conversations and notes.
+- H: Claude conversations that ended with something unfinished.
+- R: priorities from his last plan that he did not finish.
+- His meetings that day.
+
+Do this:
+1. Put every item (G/S/A/T/F/M only) on one list "b":
+${LIST_RULES}
+   Items marked "Justin put it in ..." stay where he put them, but still return them.
+2. "p": 0 = must happen that day; 1 = this week; 2 = soon; 3 = someday.
+3. "a": the plain next step in 12 words or fewer. "j": the name of the C project it belongs to, copied exactly, or "" if none.
+   When two items are the same work, return one and list the others in "dupes".
+4. Pick the ONE thing that most moves the business or unblocks the most people ${date === S.today ? "today" : "that day"}, then a Top 3: the next three most important, all different from the One Thing and from each other. Any id type (G/S/A/T/F/M/C/H/R) can be picked. Keep an R item if it still matters. For each pick give "title": the action in 10 words or fewer, starting with a verb, in plain words; and "why": one short sentence.
+5. "brief": two short sentences on where things stand. Direct, no fluff, no em dashes, no jargon or acronyms.
+
+Meetings:
+${meet || "(none)"}
+
+Projects:
+${proj.join("\n") || "(none)"}
+
+Unfinished Claude conversations:
+${threads.join("\n") || "(none)"}
+
+Carried over:
+${carry.join("\n") || "(none)"}
+
+Items (id | source | type | person | title | detail | last activity | due):
+${body}
+
+Reply with only JSON in this shape:
+{"brief":"...","one_thing":{"id":"G3","title":"...","why":"..."},"top3":[{"id":"C2","title":"...","why":"..."}],"items":[{"id":"G3","b":"today","p":0,"a":"...","j":"","l":"acquire","i":4,"e":1,"o":"justin","x":false,"dupes":["S2"]}]}`;
+}
+function idMaps(items) {
+  const ids = new Map(), back = {}, counters = {};
+  const pre = { Gmail: "G", Slack: "S", Asana: "A", TickTick: "T", Fellow: "F", You: "M", Claude: "M" };
+  for (const it of items) { const p = pre[it.src] || "X"; counters[p] = (counters[p] || 0) + 1; const id = p + counters[p]; ids.set(it.key, id); back[id] = it; }
+  return { ids, back };
+}
+function projectName(j) {
+  const m = /^C(\d+)$/.exec(String(j || "").trim());
+  if (!m) return String(j || "");
+  const p = ((S.digest || {}).projects || [])[Number(m[1]) - 1];
+  return p ? p.name : "";
+}
+function readItems(res, back, map) {
+  for (const r of (res && res.items) || []) {
+    const it = back[r.id]; if (!it || r.b === "drop") continue;
+    map[it.key] = { b: LISTS[r.b] && r.b !== "parked" ? r.b : "week", p: Math.max(0, Math.min(3, Number(r.p) || 0)), a: clip(r.a || "", 120), j: projectName(r.j), ...laneFields(r) };
+    for (const dup of r.dupes || []) if (back[dup] && back[dup] !== it) map[back[dup].key] = { b: "drop" };
+  }
+}
+function emptySlot() { return { title: "", why: "", src: "You", url: "", project: "", key: "", done: false }; }
+function inProjects(i) { return ["project", "dropped", "removed"].includes(i.manual ? i.list : (S.ov[i.key] || {}).list); }
+function planCandidates() { return [...sourceItems().filter((i) => !isDone(i)), ...itemEntries().filter((i) => !i.done)].filter((i) => !inProjects(i)); }
+
+async function makePlan(date, force) {
+  if (!S.sample) { S.planErr = "off"; render(); return; }
+  if (S.planning || !S.db) return;
+  S.attempted.add(date);
+  S.planning = true; S.planErr = ""; S.confirmReplan = false; render();
+  try {
+    const ref = S.db.doc(planPath(date));
+    let keepNotes = "";
+    const existing = await ref.get();
+    if (existing.exists) {
+      if (!force) { S.planning = false; render(); return; }  // another device already planned this day
+      keepNotes = (existing.data() || {}).notes || "";
+    }
+    const prevSnap = await S.db.doc(planPath(shiftDate(date, -1))).get();
+    const prev = prevSnap.exists ? prevSnap.data() : null;
+    const rolls = prev ? [prev.one, ...(prev.top3 || [])].filter((x) => x && x.title && !x.done) : [];
+
+    const items = planCandidates();
+    const { ids, back } = idMaps(items);
+    const d = S.digest || {};
+    const projects = (d.projects || []).slice(0, 12), threads = (d.threads || []).slice(0, 12);
+
+    const res = await S.sample.json(buildPrompt(date, items, ids, rolls), force ? { modelTier: "default", cache: false } : { modelTier: "default" });
+
+    const map = {};
+    readItems(res, back, map);
+    for (const it of items) if (!map[it.key] && !it.manual) map[it.key] = { b: "drop" };
+
+    const pick = (sel) => {
+      if (!sel || !sel.id) return null;
+      const id = String(sel.id), base = { title: clip(sel.title || "", 120), why: clip(sel.why || "", 200), done: false };
+      if (back[id]) { const it = back[id]; return { ...base, title: base.title || it.title, src: it.src, url: it.url || "", project: projectName(map[it.key] && map[it.key].j), key: it.key }; }
+      const n = Number(id.slice(1)) - 1;
+      if (id[0] === "C" && projects[n]) { const p = projects[n]; return { ...base, title: base.title || p.nextStep || p.name, src: "Project", url: "", project: p.name, key: "c:" + hashKey(p.name) }; }
+      if (id[0] === "H" && threads[n]) { const t = threads[n]; return { ...base, title: base.title || t.nextStep || t.title, src: "Claude", url: t.url || "", project: "", key: "h:" + hashKey(t.url || t.title) }; }
+      if (id[0] === "R" && rolls[n]) { const r = rolls[n]; return { ...base, title: base.title || r.title, src: r.src || "You", url: r.url || "", project: r.project || "", key: r.key || "" }; }
+      return null;
+    };
+    const one = pick(res && res.one_thing) || emptySlot();
+    const top3 = ((res && res.top3) || []).map(pick).filter(Boolean).slice(0, 3);
+    while (top3.length < 3) top3.push(emptySlot());
+
+    const plan = { date, generatedAt: nowIso(), brief: clip((res && res.brief) || "", 400), one, top3, map, notes: keepNotes };
+    if (date === S.date) { S.plan = plan; render(); }
+    queueSet(planPath(date), clone(plan), 0);
+    await flush(planPath(date));
+  } catch (e) {
+    S.planErr = planErrCopy(e, "Planning");
+  } finally {
+    S.planning = false; render();
+  }
+}
+function planErrCopy(e, what) {
+  const c = e && e.code;
+  if (["not_granted", "sampling_disabled", "not_declared", "capability_disabled", "capability_removed"].includes(c)) return "off";
+  if (c === "rate_limited") return "You've hit your Claude usage limit for now. It will fill in once it resets.";
+  if (c === "session_expired") return "Sign in to Claude again so it can sort your lists.";
+  if (c === "cancelled") return "";
+  return what + " didn't finish" + (e && e.message ? " (" + clip(e.message, 80) + ")" : "") + ".";
+}
+// Items that arrived after the plan get placed without touching the One Thing or Top 3.
+async function sortNew() {
+  if (!S.sample || !S.plan || S.sortingNew || !isToday()) return;
+  const fresh = planCandidates().filter((i) => !planEntry(i.key) && !i.manual);
+  if (!fresh.length) return;
+  S.sortingNew = true; render();
+  try {
+    const { ids, back } = idMaps(fresh);
+    const now = new Date().toLocaleString("en-US", { timeZone: TZ, weekday: "long", month: "long", day: "numeric", hour: "numeric", minute: "2-digit" });
+    const lines = fresh.map((it) => itemLine(it, ids.get(it.key)));
+    let body = lines.join("\n");
+    while (new Blob([body]).size > 40000 && lines.length) { lines.pop(); body = lines.join("\n"); }
+    const prompt = `You sort new work for Justin Eckrich, CEO of Appliance Repair Marketing (ARM). It is ${now} (Eastern). Put each item on one list "b":
+${LIST_RULES}
+"p": 0 = must happen today; 1 = this week; 2 = soon; 3 = someday. "a": plain next step in 12 words or fewer, no jargon. "j": "".
+
+Items (id | source | type | person | title | detail | last activity | due):
+${body}
+
+Reply with only JSON: {"items":[{"id":"G1","b":"today","p":1,"a":"...","j":"","l":"acquire","i":4,"e":1,"o":"justin","x":false,"dupes":[]}]}`;
+    const res = await S.sample.json(prompt, { modelTier: "quick", cache: false });
+    const map = {}; readItems(res, back, map);
+    for (const it of fresh) if (!map[it.key]) map[it.key] = { b: "drop" };
+    S.plan.map = { ...(S.plan.map || {}), ...map };
+    savePlan(0);
+    say("Sorted " + fresh.length + " new " + (fresh.length === 1 ? "item" : "items"));
+  } catch (e) { const m = planErrCopy(e, "Sorting"); if (m && m !== "off") say(m, null, 8000); }
+  finally { S.sortingNew = false; render(); }
+}
+
+/* ---------- Refresh: re-pull every tool, then refill finished or empty picks ---------- */
+async function refreshDay() {
+  if (S.refreshing || !S.mcp) return;
+  S.refreshing = true; render();
+  const before = { ...S.status };
+  S.srcDone.clear();
+  for (const c of CONNECTORS) setStatus(c, "load");
+  try { await S.mcp.invalidate(); } catch {}
+  const t0 = Date.now();
+  while (!sourcesIn() && Date.now() - t0 < 40000) await new Promise((r) => setTimeout(r, 400));
+  for (const src of SOURCES) if (!S.srcDone.has(src.key)) { S.srcDone.add(src.key); if (before[src.server]) S.status[src.server] = before[src.server]; }
+  renderSources();
+  let fromNotes = 0;
+  try { fromNotes = await notesToTasks(); } catch (e) { const m = planErrCopy(e, "Reading your notes"); if (m && m !== "off") note(m); }
+  try { await refill(); } finally { S.refreshing = false; render(); }
+  if (fromNotes) setTimeout(() => say(fromNotes + (fromNotes === 1 ? " task" : " tasks") + " pulled from your notes.", null, 5000), 3200);
+}
+async function refill() {
+  if (!S.sample || !S.plan || !canPlan()) { say("Refreshed"); return; }
+  const plan = S.plan;
+  const top = (plan.top3 || []).slice(0, 3);
+  const finished = [plan.one, ...top].filter((x) => x && x.title && x.done);
+  const oneOpen = !!(plan.one && plan.one.title && !plan.one.done);
+  const keep = top.filter((x) => x && x.title && !x.done);
+  const needOne = !oneOpen, needTop = 3 - keep.length;
+  const taken = new Set([plan.one, ...top, ...(plan.doneToday || [])].map((x) => x && x.key).filter(Boolean));
+  const items = planCandidates();
+  const { ids, back } = idMaps(items);
+  const d = S.digest || {};
+  const projects = (d.projects || []).slice(0, 12), threads = (d.threads || []).slice(0, 12);
+  const now = new Date().toLocaleString("en-US", { timeZone: TZ, weekday: "long", month: "long", day: "numeric", hour: "numeric", minute: "2-digit" });
+  const lines = items.map((it) => itemLine(it, ids.get(it.key)) + (taken.has(it.key) ? " | already in his plan" : ""));
+  let body = lines.join("\n");
+  while (new Blob([body]).size > 40000 && lines.length) { lines.pop(); body = lines.join("\n"); }
+  const meet = S.events.filter((e) => e.day === S.date).map((e) => (e.allDay ? "all day" : clock(e.start)) + " " + e.title + (e.who ? " with " + e.who : "")).join("\n");
+  const doneTitles = [...(plan.doneToday || []), ...finished].map((x) => x.title);
+  const prompt = `You are the chief of staff for Justin Eckrich, founder and CEO of Appliance Repair Marketing (ARM), a lead-generation agency for appliance repair companies. It is ${now} (Eastern). He just refreshed his plan for ${dayWords(S.date)}.
+
+His plan right now:
+One Thing: ${oneOpen ? plan.one.title : "(finished, needs a new one)"}
+${keep.map((x, i) => "K" + (i + 1) + " | " + x.title).join("\n") || "(no open Top 3 picks)"}
+Finished today: ${doneTitles.join("; ") || "(nothing yet)"}
+
+Do this:
+1. Put every item (G/S/A/T/F/M only) on one list "b":
+${LIST_RULES}
+   Items marked "Justin put it in ..." stay where he put them, but still return them.
+2. "p": 0 = must happen that day; 1 = this week; 2 = soon; 3 = someday. "a": the plain next step in 12 words or fewer. "j": the name of the C project it belongs to, copied exactly, or "".
+3. ${needOne ? "Pick a new One Thing: the single most important thing left today. It can be one of the K picks." : 'Keep his One Thing: return "one_thing": null.'}
+4. Return "top3": his Top 3 in order of importance. Include every K pick you did not make the One Thing (just its id), then ${needTop > 0 || needOne ? "add new picks until there are 3" : "nothing else"}. A new pick can be any id type (G/S/A/T/F/M/C/H) but must not be finished, already in his plan, or dropped. For each new pick give "title" (the action in 10 words or fewer, starting with a verb) and "why" (one short sentence).
+Plain words only: no em dashes, no jargon or acronyms.
+
+Meetings that day:
+${meet || "(none)"}
+
+Projects:
+${projects.map((p, i) => "C" + (i + 1) + " | " + clip(p.name + " | next: " + (p.nextStep || ""), 200)).join("\n") || "(none)"}
+
+Unfinished Claude conversations:
+${threads.map((t, i) => "H" + (i + 1) + " | " + clip(t.title + " | next: " + (t.nextStep || ""), 200)).join("\n") || "(none)"}
+
+Items (id | source | type | person | title | detail | last activity | due):
+${body}
+
+Reply with only JSON in this shape:
+${needOne ? '{"one_thing":{"id":"K1","title":"...","why":"..."},"top3":[{"id":"K2"},{"id":"G4","title":"...","why":"..."},{"id":"H1","title":"...","why":"..."}],' : '{"one_thing":null,"top3":[{"id":"K1"},{"id":"G4","title":"...","why":"..."},{"id":"A2","title":"...","why":"..."}],'}"items":[{"id":"G3","b":"today","p":0,"a":"...","j":"","l":"acquire","i":4,"e":1,"o":"justin","x":false,"dupes":[]}]}`;
+  try {
+    const res = await S.sample.json(prompt, { modelTier: "default", cache: false });
+    const map = {};
+    readItems(res, back, map);
+    for (const it of items) if (!map[it.key] && !it.manual) map[it.key] = { b: "drop" };
+    const pick = (sel) => {
+      if (!sel || !sel.id) return null;
+      const id = String(sel.id), n = Number(id.slice(1)) - 1, base = { title: clip(sel.title || "", 120), why: clip(sel.why || "", 200), done: false };
+      if (id[0] === "K" && keep[n]) return { ...keep[n] };
+      if (back[id]) { const it = back[id]; const m = map[it.key] || {}; if (taken.has(it.key) || m.b === "drop") return null; return { ...base, title: base.title || it.a || it.title, src: it.src, url: it.url || "", project: m.j || "", key: it.key }; }
+      if (id[0] === "C" && projects[n]) { const p = projects[n]; return { ...base, title: base.title || p.nextStep || p.name, src: "Project", url: "", project: p.name, key: "c:" + hashKey(p.name) }; }
+      if (id[0] === "H" && threads[n]) { const t = threads[n]; return { ...base, title: base.title || t.nextStep || t.title, src: "Claude", url: t.url || "", project: "", key: "h:" + hashKey(t.url || t.title) }; }
+      return null;
+    };
+    const sameAs = (a, b) => a && b && (a.key && b.key ? a.key === b.key : a.title === b.title);
+    let one = oneOpen ? plan.one : (pick(res && res.one_thing) || emptySlot());
+    const next = [];
+    for (const sel of (res && res.top3) || []) { const x = pick(sel); if (x && !sameAs(x, one) && !next.some((y) => sameAs(x, y))) next.push(x); }
+    for (const k of keep) if (!sameAs(k, one) && !next.some((y) => sameAs(k, y))) next.push({ ...k });
+    // If Claude came back short, fill from the highest-priority open work so no spot sits empty.
+    const backup = items.filter((it) => !it.manual && map[it.key] && map[it.key].b !== "drop" && map[it.key].b !== "waiting" && !taken.has(it.key))
+      .sort((a, b) => map[a.key].p - map[b.key].p || (b.date || 0) - (a.date || 0))
+      .map((it) => ({ title: map[it.key].a || it.title, why: it.title !== (map[it.key].a || it.title) ? it.title : "", src: it.src, url: it.url || "", project: map[it.key].j || "", key: it.key, done: false }));
+    if (!one || !one.title) one = next.shift() || backup.shift() || emptySlot();
+    for (const x of backup) { if (next.length >= 3) break; if (!sameAs(x, one) && !next.some((y) => sameAs(x, y))) next.push(x); }
+    const top3 = next.slice(0, 3);
+    while (top3.length < 3) top3.push(emptySlot());
+    const added = top3.filter((x) => x.title && !keep.some((k) => sameAs(k, x))).length + (!oneOpen && one.title ? 1 : 0);
+    S.plan = { ...plan, one, top3, map: { ...(plan.map || {}), ...map },
+      doneToday: [...(plan.doneToday || []), ...finished.map((x) => ({ title: x.title, src: x.src || "You", key: x.key || "", at: nowIso() }))].slice(-20),
+      refreshedAt: nowIso() };
+    savePlan(0);
+    say(added ? "Refreshed. " + added + (added === 1 ? " new pick." : " new picks.") : "Refreshed. Your picks still stand.");
+  } catch (e) {
+    const m = planErrCopy(e, "Refreshing");
+    if (m === "off") S.planErr = "off"; else if (m) say(m, null, 8000);
+  }
+}
+$("refreshBtn").addEventListener("click", refreshDay);
+$("gearBtn").addEventListener("click", () => { S.settingsOpen = !S.settingsOpen; renderSettings(); });
+
+/* ---------- One Thing & Top 3 edits ---------- */
+function editSlot(which, patch, delay) {
+  if (!S.plan) return;
+  if (which === "one") S.plan.one = { ...(S.plan.one || emptySlot()), ...patch };
+  else S.plan.top3[which] = { ...(S.plan.top3[which] || emptySlot()), ...patch };
+  savePlan(delay);
+}
+function toggleSlot(which) {
+  const slot = which === "one" ? S.plan.one : S.plan.top3[which];
+  const done = !slot.done;
+  editSlot(which, { done }, 0);
+  const e = slot.key ? entries().find((x) => x.key === slot.key) : null;
+  if (e && done && e.place !== "done") {
+    commit(e);
+    say("Done: " + clip(slot.title, 44) + "." + (e.src === "Asana" || e.src === "TickTick" ? " Also in " + e.src + "." : ""));
+  } else if (e && !done && e.place === "done") putBack(e);
+  render();
+}
+function moveTop(i, dir) {
+  const t = S.plan.top3, j = i + dir;
+  if (j < 0 || j > 2) return;
+  [t[i], t[j]] = [t[j], t[i]];
+  savePlan(0); render();
+}
+function makeOne(i) {
+  const was = S.plan.one;
+  S.plan.one = { ...S.plan.top3[i], done: false };
+  S.plan.top3[i] = was && was.title ? { ...was } : emptySlot();
+  savePlan(0); render();
+  say("Moved to One Thing");
+}
+function removeTop(i) {
+  const before = clone(S.plan.top3);
+  S.plan.top3[i] = emptySlot();
+  savePlan(0); render();
+  say("Removed from Top 3", () => { S.plan.top3 = before; savePlan(0); render(); });
+}
+function addToTop(e) {
+  if (!S.plan) return;
+  const slot = { title: e.a || e.title, why: e.title !== (e.a || e.title) ? e.title : "", src: e.src, url: e.url || "", project: e.project || "", key: e.key, done: false };
+  const before = clone(S.plan.top3);
+  let i = S.plan.top3.findIndex((x) => !x.title);
+  let msg = "Added to Top 3";
+  if (i < 0) { i = 2; msg = "Replaced #3: " + clip(S.plan.top3[2].title, 36); }
+  S.plan.top3[i] = slot;
+  savePlan(0); render();
+  say(msg, () => { S.plan.top3 = before; savePlan(0); render(); });
+}
+
+/* ---------- rendering pieces ---------- */
+function srcSpan(src) { return h("span", { class: "src", "data-s": src === "Notes" ? "You" : src }, src === "You" ? "Added by you" : src === "Notes" ? "From your notes" : src); }
+function projSpan(name) { name = projectName(name); return name ? h("span", null, icon("i-list"), name) : null; }
+function openLink(url, cls) { return url ? h("a", { href: url, target: "_blank", rel: "noopener", class: cls || null }, icon("i-out"), "Open") : null; }
+function sortByPriority(arr) {
+  return arr.sort((a, b) => {
+    const pa = a.p == null ? 1.5 : a.p, pb = b.p == null ? 1.5 : b.p;
+    if (pa !== pb) return pa - pb;
+    const da = daysUntil(a.due), db = daysUntil(b.due);
+    if ((da ?? 99) !== (db ?? 99)) return (da ?? 99) - (db ?? 99);
+    return (b.date || 0) - (a.date || 0);
+  });
+}
+function inPlan(key) { return !!(S.plan && isToday() && [S.plan.one, ...(S.plan.top3 || [])].some((x) => x && x.key === key && x.title)); }
+
+function row(e, opts = {}) {
+  const checked = S.pending.has(e.key) || e.place === "done";
+  const ov = S.ov[e.key] || {};
+  const due = e.place !== "done" ? dueLabel(e.due) : null;
+  const expanded = S.expanded.has(e.key), moving = S.moving.has(e.key), asanaing = S.asanaOpen.has(e.key);
+  const title = e.url ? h("a", { href: e.url, target: "_blank", rel: "noopener" }, e.title) : e.title;
+  const doneAt = doneAtOf(e);
+  const hist = (e.manual ? (S.items[e.id] || {}).history : ov.history) || [];
+  const tools = h("div", { class: "tools" });
+  if (e.place === "done") {
+    tools.append(h("button", { class: "mini", type: "button", onclick: () => putBack(e) }, "Put back"));
+    if (ov.syncError) tools.append(h("button", { class: "mini primary", type: "button", onclick: () => retry(e) }, "Retry in " + e.src));
+  } else if (!checked) {
+    if (S.plan && isToday() && !inPlan(e.key) && opts.canTop !== false) tools.append(h("button", { class: "mini primary", type: "button", onclick: () => addToTop(e) }, "+ Top 3"));
+    if (inPlan(e.key)) tools.append(h("span", { class: "new" }, "In your plan"));
+    tools.append(h("button", { class: "mini", type: "button", "aria-expanded": String(moving), onclick: () => { moving ? S.moving.delete(e.key) : S.moving.add(e.key); render(); } }, "Move"));
+    if (!e.ghost) tools.append(pinButton(e));
+    if (e.src !== "Asana" && !e.ghost) tools.append(h("button", { class: "mini", type: "button", "aria-expanded": String(asanaing), onclick: () => { asanaing ? S.asanaOpen.delete(e.key) : (S.asanaOpen.add(e.key), loadTeam()); render(); } }, "→ Asana"));
+    if (!e.url) tools.append(h("button", { class: "mini", type: "button", onclick: () => findInSlack(e) }, "Find in Slack"));
+  }
+  if (!checked || e.place === "done") tools.append(...askTools(() => askForEntry(e), e.src === "Claude" && isClaudeChat(e.url) ? e.url : null));
+  if (!checked || e.place === "done") tools.append(h("button", { class: "mini", type: "button", "aria-expanded": String(expanded), onclick: () => { expanded ? S.expanded.delete(e.key) : S.expanded.add(e.key); render(); } },
+    hist.length ? "Notes · " + hist.length : "Notes"));
+  const body = h("div", { class: "body" },
+    h("div", { class: "title" }, title),
+    e.kind === "loop" && e.detail ? h("div", { class: "why" }, e.detail) : null,
+    e.a && e.place !== "done" ? h("div", { class: "act" }, h("b", null, "Next: "), e.a) : null,
+    h("div", { class: "meta-row" },
+      laneChip(e),
+      e.p != null && e.place !== "done" && !opts.noPill ? h("span", { class: "pill p" + e.p, title: ["Must happen today", "This week", "Soon", "Someday"][e.p] }, "P" + e.p) : null,
+      srcSpan(e.fromNotes ? "Notes" : e.src), e.who ? h("span", null, icon("i-user"), e.who) : null,
+      !isMine(e) && e.owner !== e.who ? h("span", null, icon("i-user"), "Owner: " + e.owner) : null, projSpan(e.project), openLink(e.url),
+      due ? h("span", { class: due.late ? "hot" : "" }, icon("i-cal"), due.text) : null,
+      e.place === "done" && doneAt ? h("span", null, "done " + ago(doneAt)) : e.date ? h("span", null, ago(e.date)) : null,
+      e.flag === "unread" ? h("span", null, "unread") : null,
+      e.fresh && e.place !== "done" ? h("span", { class: "new" }, "New") : null,
+      ov.syncError ? h("span", { class: "syncerr" }, ov.syncError) : null),
+    tools);
+  if (moving && !checked) body.append(h("div", { class: "tools" }, h("span", { class: "lbl" }, "Move to"),
+    ...Object.entries(LISTS).map(([id, name]) => h("button", { class: "mini", type: "button", "aria-pressed": String(e.place === id), onclick: () => moveTo(e, id) }, name)),
+    h("button", { class: "mini", type: "button", onclick: () => moveToProject(e) }, "Projects")));
+  if (asanaing && !checked) body.append(asanaForm(e));
+  if (expanded) {
+    if (!e.ghost && e.place !== "done") body.append(scaleRow(e));
+    if (e.kind !== "loop" && e.detail) body.append(h("div", { class: "detail" }, e.detail));
+    if (hist.length) body.append(h("ul", { class: "hist" }, ...hist.slice(-10).reverse().map((x) => h("li", null, h("b", null, x.by || "Justin"), " · " + x.text + " · " + ago(Date.parse(x.at))))));
+    const inp = h("input", { type: "text", id: "note-" + e.key, placeholder: "Add a note or progress update", "aria-label": "Add a note" });
+    body.append(h("form", { class: "noteform", onsubmit: (ev) => { ev.preventDefault(); addNote(e, inp.value); inp.value = ""; } }, inp, h("button", { class: "mini", type: "submit" }, "Add")));
+  }
+  return h("div", { class: "loop" + (checked ? " is-done" : "") },
+    h("button", { class: "check" + (e.p === 0 && !checked ? " urgent" : ""), type: "button", "aria-pressed": String(checked), "aria-label": (checked ? "Put back " : "Check off ") + e.title, onclick: () => check(e) }),
+    body);
+}
+function lifeSection(rows, id, cap) {
+  const open = S.open[id] !== false;
+  const head = h("button", { class: "lifehead", type: "button", "aria-expanded": String(open), onclick: () => { S.open[id] = !open; render(); } },
+    h("h2", { style: "margin:0" }, h("span", { class: "lane-chip lane-life" }, "Life"), capCount(rows.length, cap)), h("span", { class: "chev", "aria-hidden": "true", style: "margin-left:auto;color:var(--ink-faint)" }, open ? "–" : "+"));
+  const box = h("div");
+  if (open) { if (!rows.length) box.append(h("p", { class: "empty" }, "No personal items here. Tap a lane chip and pick Life to file one.")); for (const e of rows) box.append(row(e)); }
+  return h("section", null, head, box);
+}
+function listSection(id, title, rows, cap, emptyMsg, opts = {}) {
+  const box = h("div");
+  if (opts.capList) { const sw = swapBox(opts.capList, rows); if (sw) box.append(sw); }
+  if (!rows.length && emptyMsg) box.append(h("p", { class: "empty" }, emptyMsg));
+  const n = S.open[id] ? rows.length : cap;
+  for (const e of rows.slice(0, n)) box.append(row(e, opts));
+  if (rows.length > cap) box.append(h("button", { class: "mini more", type: "button", onclick: () => { S.open[id] = !S.open[id]; render(); } },
+    S.open[id] ? "Show fewer" : "Show " + (rows.length - cap) + " more"));
+  if (opts.add) box.append(addBox(opts.add));
+  return h("section", null, title ? h("h2", null, title, opts.capOf ? capCount(rows.length, opts.capOf) : h("span", { class: "count" }, String(rows.length))) : null, box);
+}
+function addBox(list) {
+  const inp = h("input", { type: "text", id: "add-" + list, placeholder: "Add to " + LISTS[list], "aria-label": "Add to " + LISTS[list] });
+  return h("form", { class: "add", onsubmit: (ev) => { ev.preventDefault(); quickAdd(list, inp.value); inp.value = ""; } }, h("span", { class: "plus", "aria-hidden": "true" }, "+"), inp);
+}
+function meetingsSection(title, evs, grouped, emptyMsg) {
+  const box = h("div"); const now = Date.now(); let last = "";
+  if (!evs.length) box.append(h("p", { class: "empty" }, emptyMsg));
+  for (const ev of evs) {
+    if (grouped && ev.day !== last) { last = ev.day; box.append(h("div", { class: "dayh" }, new Date(ev.day + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" }))); }
+    box.append(h("div", { class: "mt" + (ev.end < now ? " past" : ev.start <= now ? " now" : "") },
+      h("span", { class: "tm" }, ev.allDay ? "All day" : clock(ev.start)),
+      h("div", null, h("div", { class: "tt" }, ev.url ? h("a", { href: ev.url, target: "_blank", rel: "noopener" }, ev.title) : ev.title), ev.who ? h("div", { class: "who" }, ev.who) : null),
+      h("div", { class: "meta-row" }, ev.join && ev.end > now ? h("a", { class: "join", href: ev.join, target: "_blank", rel: "noopener" }, "Join") : null, openLink(ev.url))));
+  }
+  return h("section", null, h("h2", null, title, h("span", { class: "count" }, String(evs.length))), box);
+}
+
+function slotBody(which, slot) {
+  const isOne = which === "one";
+  const input = h("input", { class: "text", id: isOne ? "one-thing" : "top-" + (which + 1), "aria-label": isOne ? "One Thing" : "Priority " + (which + 1),
+    value: slot.title || "", placeholder: isOne ? "Nothing picked yet" : "Empty. Tap + Top 3 on anything below." });
+  input.addEventListener("input", () => editSlot(which, { title: input.value }));
+  const linked = slot.title && slot.key ? entries().find((x) => x.key === slot.key) : null;
+  const meta = h("div", { class: "meta-row" }, linked ? laneChip(linked) : null, slot.title ? srcSpan(slot.src || "You") : null, projSpan(slot.project), openLink(slot.url || urlForKey(slot.key)));
+  const body = h("div", { class: "body" }, input);
+  if (slot.why) body.append(h("div", { class: "why" }, slot.why));
+  if (meta.childNodes.length) body.append(meta);
+  if (slot.title) body.append(h("div", { class: "tools" }, ...askTools(() => askForSlot(slot, which), slot.src === "Claude" && isClaudeChat(slot.url) ? slot.url : null)));
+  return body;
+}
+function oneBox() {
+  const box = h("div", { class: "one" }, h("div", { class: "kicker" }, "One Thing"));
+  if (!S.plan) {
+    const msg = S.planning ? "Claude is picking your One Thing…" : S.plan === undefined ? "Loading your plan…"
+      : canPlan() ? (S.sample ? (isTomorrow() && nowHour() < EVENING_HOUR ? "Tomorrow gets planned this evening." : (S.digest === null || !sourceItems().length) ? "Pulling in your work…" : "Getting ready to plan…") : "Claude can't plan from this view.")
+      : "No plan was saved for this day.";
+    box.append(h("div", { class: "placeholder" }, S.planning || (canPlan() && S.sample && S.plan === null && !(isTomorrow() && nowHour() < EVENING_HOUR)) ? h("span", { class: "spin", "aria-hidden": "true" }) : null, msg));
+    return box;
+  }
+  const slot = S.plan.one || emptySlot();
+  box.append(h("div", { class: "task" + (slot.done ? " is-done" : "") },
+    h("button", { class: "check", type: "button", "aria-pressed": String(!!slot.done), "aria-label": "Mark One Thing done", onclick: () => toggleSlot("one") }),
+    slotBody("one", slot)));
+  return box;
+}
+function top3Section() {
+  const box = h("div");
+  const t = (S.plan && S.plan.top3) || [];
+  if (!S.plan) box.append(h("p", { class: "empty" }, S.planning ? "Picking your Top 3…" : "Your Top 3 fill in with the plan."));
+  t.forEach((slot, i) => {
+    const body = slotBody(i, slot);
+    if (slot.title) body.append(h("div", { class: "tools" },
+      h("button", { class: "mini", type: "button", disabled: i === 0, "aria-label": "Move up", onclick: () => moveTop(i, -1) }, "↑"),
+      h("button", { class: "mini", type: "button", disabled: i === 2, "aria-label": "Move down", onclick: () => moveTop(i, 1) }, "↓"),
+      h("button", { class: "mini", type: "button", onclick: () => makeOne(i) }, "Make One Thing"),
+      h("button", { class: "mini", type: "button", onclick: () => removeTop(i) }, "Remove")));
+    box.append(h("div", { class: "task" + (slot.done ? " is-done" : "") },
+      h("button", { class: "check", type: "button", "aria-pressed": String(!!slot.done), "aria-label": "Mark priority " + (i + 1) + " done", disabled: !slot.title, onclick: () => toggleSlot(i) }),
+      body));
+  });
+  const done = t.filter((x) => x.title && x.done).length, total = t.filter((x) => x.title).length;
+  const earlier = (S.plan && S.plan.doneToday) || [];
+  if (earlier.length) box.append(h("p", { class: "donetoday" }, h("b", null, "Done today: "), earlier.map((x) => x.title).join(" · ")));
+  return h("section", { "aria-labelledby": "h-top3" }, h("h2", { id: "h-top3" }, "Top 3", h("span", { class: "count" }, done + "/" + total)), box);
+}
+
+function renderHeader(counts) {
+  const onToday = S.view === "today" && !S.srcFilter;
+  $("dayBtns").hidden = !onToday;
+  const rb = $("refreshBtn");
+  rb.hidden = !(canPlan() && S.mcp);
+  rb.disabled = S.refreshing || S.planning;
+  rb.replaceChildren(S.refreshing ? h("span", { class: "spin", "aria-hidden": "true" }) : "↻", S.refreshing ? " Refreshing…" : " Refresh");
+  const bar = $("planbar"); bar.replaceChildren();
+  if (S.search) {
+    $("dayBtns").hidden = true;
+    $("dayName").textContent = "Search";
+    $("daySub").textContent = "Results for “" + S.search.q + "”";
+    $("brief").textContent = "This page first, then Slack, Gmail and Asana."; $("brief").hidden = false;
+    bar.append(h("button", { class: "linkbtn", type: "button", onclick: () => setSearch("") }, "Clear search"));
+    return;
+  }
+  if (S.srcFilter) {
+    const f = S.srcFilter, n = counts.filter;
+    $("dayName").textContent = f === "Claude" ? "Claude chats" : f;
+    $("daySub").textContent = n + (f === "Calendar" ? (n === 1 ? " meeting" : " meetings") + " in the next 8 days" : n === 1 ? " open item" : " open items");
+    $("brief").textContent = "Only " + (f === "Claude" ? "Claude chat" : f) + " items, across all your lists."; $("brief").hidden = false;
+    bar.append(h("button", { class: "linkbtn", type: "button", onclick: () => toggleSrc(f) }, "Show everything"));
+    return;
+  }
+  if (!onToday) {
+    const [t, s] = HEAD[S.view];
+    $("dayName").textContent = t;
+    const n = counts[S.view];
+    $("daySub").textContent = S.view === "projects" ? n + (n === 1 ? " active project" : " active projects") : n + (n === 1 ? " item" : " items");
+    $("brief").textContent = s; $("brief").hidden = false;
+    if (S.view === "loops") { const at = S.digest && S.digest.generatedAt ? Date.parse(S.digest.generatedAt) : 0; if (at) bar.append("Swept from your Claude chats " + ago(at) + (Date.now() - at > 36 * 3600e3 ? ". That's over a day old; check the morning sweep's approval setting." : ".")); }
+    if (S.view !== "done" && S.view !== "projects") newBar(bar, bar.childNodes.length > 0);
+    return;
+  }
+  const d = new Date(S.date + "T12:00:00Z");
+  const weekday = d.toLocaleDateString("en-US", { timeZone: "UTC", weekday: "long" });
+  const monthDay = d.toLocaleDateString("en-US", { timeZone: "UTC", month: "long", day: "numeric" });
+  const doy = Math.floor((d - Date.UTC(d.getUTCFullYear(), 0, 0)) / 864e5);
+  $("dayName").textContent = weekday;
+  const sub = $("daySub"); sub.replaceChildren();
+  const tag = isToday() ? "Today" : isTomorrow() ? "Tomorrow" : S.date < S.today ? "Past day" : "";
+  if (tag) sub.append(h("b", null, tag), " · ");
+  sub.append(monthDay + " · Day " + doy);
+  $("nextDay").disabled = S.date >= shiftDate(S.today, 1);
+
+  const brief = S.plan && S.plan.brief ? S.plan.brief : (S.digest && S.digest.summary) || "";
+  $("brief").textContent = brief; $("brief").hidden = !brief;
+
+  if (S.planning) bar.append(h("span", { class: "spin", "aria-hidden": "true" }), "Claude is planning " + (isTomorrow() ? "tomorrow" : "your day") + "…");
+  else if (S.refreshing) bar.append(h("span", { class: "spin", "aria-hidden": "true" }), "Pulling in your tools and refilling your picks…");
+  else if (S.plan && S.confirmReplan) {
+    bar.append("Replace the One Thing and Top 3 with a fresh plan?",
+      h("button", { class: "linkbtn warn", type: "button", onclick: () => makePlan(S.date, true) }, "Re-plan"),
+      h("button", { class: "linkbtn", type: "button", onclick: () => { S.confirmReplan = false; render(); } }, "Cancel"));
+  } else if (S.plan) {
+    const at = Date.parse(S.plan.generatedAt), rat = Date.parse(S.plan.refreshedAt || "");
+    bar.append("Planned by Claude " + (Date.now() - at < 20 * 3600e3 ? "at " + clock(at) : ago(at)) + (rat > at ? ", refreshed at " + clock(rat) : ""));
+    if (canPlan() && S.sample) bar.append(h("span", { class: "sep" }, "·"), h("button", { class: "linkbtn", type: "button", onclick: () => { S.confirmReplan = true; render(); } }, "Re-plan"));
+    if (isToday()) newBar(bar, true);
+  } else if (S.plan === null && canPlan() && S.sample) {
+    bar.append(isTomorrow() && nowHour() < EVENING_HOUR ? "Tomorrow plans itself after 5pm." : "Not planned yet.",
+      h("button", { class: "linkbtn", type: "button", onclick: () => makePlan(S.date, false) }, isTomorrow() ? "Plan tomorrow now" : "Plan my day"));
+  }
+  if (isToday() && nowHour() >= EVENING_HOUR) bar.append(h("span", { class: "sep" }, "·"), h("button", { class: "linkbtn", type: "button", onclick: () => goTo(shiftDate(S.today, 1)) }, "Review tomorrow ›"));
+}
+function newBar(bar, sep) {
+  if (!S.plan || !S.sample || S.date !== S.today) return;
+  const n = planCandidates().filter((i) => !planEntry(i.key) && !i.manual).length;
+  if (S.sortingNew) { if (sep) bar.append(h("span", { class: "sep" }, "·")); bar.append(h("span", { class: "spin", "aria-hidden": "true" }), "Sorting new items…"); return; }
+  if (!n) return;
+  if (sep) bar.append(h("span", { class: "sep" }, "·"));
+  bar.append(h("button", { class: "linkbtn", type: "button", onclick: sortNew }, n + " new since the plan · Sort them"));
+}
+function renderNotices() {
+  const box = $("notices"); box.replaceChildren();
+  const add = (text, cls, btn) => box.append(h("div", { class: "notice" + (cls ? " " + cls : "") }, h("span", null, text), btn || null));
+  if (S.mcp === false) add("This view can't reach your connected tools. Open the page from its claude.ai link while signed in.", "bad");
+  if (S.db === false) add("This view can't save. Open the page from its claude.ai link while signed in.", "bad");
+  if (S.planErr === "off") add("Claude isn't allowed to plan from this page. Allow it in the page's permissions to get your One Thing, Top 3 and sorted lists.", "bad");
+  else if (S.planErr) add(S.planErr, "bad", canPlan() ? h("button", { class: "mini primary", type: "button", onclick: () => makePlan(S.date, !!S.plan) }, "Try again") : null);
+  extraNotes.forEach((m, i) => add(m, "bad", h("button", { class: "mini", type: "button", onclick: () => { extraNotes.splice(i, 1); render(); } }, "Dismiss")));
+  box.hidden = !box.childNodes.length;
+}
+function renderNav(counts, hot) {
+  const nav = $("nav"); nav.replaceChildren();
+  for (const v of VIEWS) {
+    if (v.sep) { nav.append(h("div", { class: "navsep" })); continue; }
+    const n = counts[v.id];
+    nav.append(h("button", { class: "nav", type: "button", "aria-current": S.view === v.id && !S.srcFilter && !S.search ? "page" : null, onclick: () => go(v.id) },
+      h("span", { html: '<svg viewBox="0 0 24 24">' + v.icon + "</svg>", style: "display:contents" }), v.name,
+      h("span", { class: "n" + (v.id === "today" && hot ? " hot" : "") }, v.id === "done" || !n ? "" : String(n))));
+  }
+}
+
+/* ---------- pages ---------- */
+function projectGroups() {
+  const tasks = new Map();
+  for (const t of [...S.asana.mine, ...S.asana.out]) tasks.set(t.gid, t);
+  const groups = new Map();
+  for (const t of tasks.values()) for (const p of t.projects || []) {
+    if (!p.gid) continue;
+    const g = groups.get(p.gid) || { gid: p.gid, name: p.name, tasks: [], last: 0 };
+    g.tasks.push(t); g.last = Math.max(g.last, Date.parse(t.modified_at) || 0); groups.set(p.gid, g);
+  }
+  return [...groups.values()].filter((g) => Date.now() - g.last < 60 * 864e5).sort((a, b) => b.last - a.last);
+}
+function myProjectRow(p) {
+  const f = p.from || {}, open = S.openProj.has(p.id), hist = p.history || [];
+  const wrap = h("div", { class: "projrow" },
+    h("button", { class: "projhead", type: "button", "aria-expanded": String(open), onclick: () => { open ? S.openProj.delete(p.id) : S.openProj.add(p.id); render(); } },
+      h("div", null, h("div", { class: "nm" }, p.name),
+        h("div", { class: "st" }, f.src ? h("span", null, "From " + (f.src === "You" ? "your list" : f.src)) : null,
+          h("span", null, "added " + ago(Date.parse(p.createdAt))), hist.length > 1 ? h("span", null, "Notes · " + (hist.length - 1)) : null)),
+      h("span", { class: "chev", "aria-hidden": "true" }, open ? "–" : "+")));
+  if (open) {
+    const inp = h("input", { type: "text", id: "pnote-" + p.id, placeholder: "Add a note or next step", "aria-label": "Add a note to " + p.name });
+    wrap.append(h("div", { class: "projbody" },
+      f.title && f.title !== p.name ? h("div", { class: "detail" }, f.title) : null,
+      hist.length ? h("ul", { class: "hist" }, ...hist.slice(-10).reverse().map((x) => h("li", null, h("b", null, x.by || "Justin"), " · " + x.text + " · " + ago(Date.parse(x.at))))) : null,
+      h("form", { class: "noteform", onsubmit: (ev) => { ev.preventDefault(); const t = inp.value.trim(); if (t) saveProject(p.id, {}, t); inp.value = ""; } }, inp, h("button", { class: "mini", type: "submit" }, "Add")),
+      h("div", { class: "tools" }, openLink(f.url, "mini"), ...askTools(() => askForProject(p)),
+        h("button", { class: "mini", type: "button", onclick: () => moveBack(p) }, "Move back to " + (LISTS[f.list] || "This Week")),
+        h("button", { class: "mini", type: "button", onclick: () => finishProject(p) }, "Mark finished"))));
+  }
+  return wrap;
+}
+function projectsPage(page, all, loading) {
+  const mine = myProjects();
+  const mineBox = h("div");
+  const pin = h("input", { type: "text", id: "new-project", placeholder: "New project name", "aria-label": "New project name" });
+  mineBox.append(h("form", { class: "newproj", onsubmit: (ev) => { ev.preventDefault(); const name = pin.value.trim(); if (!name) return;
+    const id = newProjectId(); saveProject(id, { name: clip(name, 120), from: { src: "You", title: "" }, createdAt: nowIso(), archived: false }, "Made a project");
+    pin.value = ""; say("New project: " + clip(name, 40), () => saveProject(id, { archived: true }, "Undone")); } },
+    pin, h("button", { class: "mini primary", type: "submit" }, "+ New project")));
+  if (!mine.length) mineBox.append(h("p", { class: "empty" }, "None yet. Add one above, tap Move on any item and pick Projects, or type “New project: …” in the capture bar."));
+  for (const p of mine) mineBox.append(myProjectRow(p));
+  page.append(h("section", null, h("h2", null, "Your projects", h("span", { class: "count" }, String(mine.length))), mineBox));
+  const G = projectGroups();
+  const byKey = new Map(all.map((e) => [e.key, e]));
+  const box = h("div");
+  if (!G.length) box.append(h("p", { class: "empty" }, loading ? "Loading Asana…" : "No active Asana projects in your tasks."));
+  for (const g of G) {
+    const rows = g.tasks.map((t) => { const base = asanaItem(t); const e = byKey.get(base.key) || base; if (!e.place) e.place = placeOf(e); return e; }).filter((e) => e.place !== "done");
+    const late = rows.filter((e) => (daysUntil(e.due) ?? 1) < 0).length;
+    const owners = [...new Set(g.tasks.map((t) => (t.assignee && t.assignee.gid !== ME_ASANA ? t.assignee.name : "You")))];
+    const open = S.openProj.has(g.gid);
+    const wrap = h("div", { class: "projrow" },
+      h("button", { class: "projhead", type: "button", "aria-expanded": String(open), onclick: () => { open ? S.openProj.delete(g.gid) : S.openProj.add(g.gid); render(); } },
+        h("div", null, h("div", { class: "nm" }, g.name),
+          h("div", { class: "st" }, h("span", null, rows.length + " open"), late ? h("span", { class: "hot" }, late + " overdue") : null,
+            h("span", null, owners.slice(0, 4).join(", ") + (owners.length > 4 ? " +" + (owners.length - 4) : "")), h("span", null, "active " + ago(g.last)))),
+        h("span", { class: "chev", "aria-hidden": "true" }, open ? "–" : "+")));
+    if (open) {
+      const inner = h("div", { class: "projbody" }, h("div", { class: "tools", style: "margin:0 0 4px" }, openLink("https://app.asana.com/0/" + g.gid + "/list", "mini")));
+      for (const e of sortByPriority(rows)) inner.append(row(e));
+      wrap.append(inner);
+    }
+    box.append(wrap);
+  }
+  page.append(h("section", null, h("h2", null, "In Asana", h("span", { class: "count" }, String(G.length))), box));
+}
+function filterPage(page, all, loading) {
+  const f = S.srcFilter;
+  if (f === "Calendar") {
+    page.append(meetingsSection("Meetings", S.events, true, S.srcDone.has("cal") ? "No meetings in the next 8 days." : "Loading your calendar…"));
+    return;
+  }
+  const rows = all.filter((e) => e.src === f && e.place && LISTS[e.place]);
+  if (!rows.length) page.append(h("p", { class: "empty" }, loading ? "Loading your tools…" : "No open " + (f === "Claude" ? "Claude chat" : f) + " items."));
+  for (const [id, name] of Object.entries(LISTS)) {
+    const L = rows.filter((e) => e.place === id);
+    if (L.length) page.append(listSection("f-" + id, name, id === "waiting" ? L : sortByPriority(L), 10, "", { canTop: id !== "waiting" }));
+  }
+}
+
+function paint() {
+  const all = entries();
+  const by = {}; for (const e of all) if (e.place) (by[e.place] ||= []).push(e);
+  for (const k of CAPPED) if (by[k]) by[k].sort(byScore);
+  const loading = !sourcesIn();
+  const openPicks = S.plan && isToday() ? [S.plan.one, ...(S.plan.top3 || [])].filter((x) => x && x.title && !x.done).length : 0;
+  const counts = { today: workOn(all, "today").length + openPicks, week: workOn(all, "week").length, waiting: (by.waiting || []).length, backlog: workOn(all, "backlog").length,
+    loops: (by.loops || []).length, projects: projectGroups().length + myProjects().length, done: (by.done || []).length, parked: (by.parked || []).length,
+    filter: S.srcFilter === "Calendar" ? S.events.length : all.filter((e) => e.src === S.srcFilter && e.place && LISTS[e.place]).length };
+  renderNav(counts, (by.today || []).filter((e) => e.p === 0).length);
+  renderHeader(counts);
+  renderNotices();
+
+  const page = $("page"); page.replaceChildren();
+  const v = S.search ? "search" : S.srcFilter ? "filter" : S.view;
+  if (v === "search") {
+    searchPage(page, all);
+  } else if (v === "filter") {
+    filterPage(page, all, loading);
+  } else if (v === "today") {
+    if (isToday()) { const mb = mixBar(); if (mb) page.append(mb); const cs = cutsSection(all); if (cs) page.append(cs); }
+    page.append(oneBox(), top3Section());
+    if (isToday()) {
+      page.append(listSection("today", "Next Up", workOn(all, "today"), 5, loading ? "Loading your tools…" : "Nothing else lined up. It fills from This Week as you finish things.", { add: "today", capOf: CAPS.today, capList: "today" }));
+      page.append(lifeSection(lifeOn(all, "today"), "lifeToday", LIFE_CAPS.today));
+    }
+    const evs = S.events.filter((e) => e.day === S.date);
+    const cal = S.status["Google Calendar"];
+    page.append(meetingsSection("Meetings", evs, false, cal && cal.s === "err" ? "Calendar: " + cal.msg + "." : S.srcDone.has("cal") ? "No meetings." : "Loading your calendar…"));
+    const notes = h("textarea", { id: "notes", "aria-label": "Notes", placeholder: S.plan ? "Anything you want to remember about this day." : "Notes open once the day is planned." });
+    notes.value = (S.plan && S.plan.notes) || ""; notes.disabled = !S.plan;
+    notes.addEventListener("input", () => { if (S.plan) { S.plan.notes = notes.value; savePlan(); } });
+    page.append(h("section", null, h("h2", null, "Notes"), notes));
+  } else if (v === "week") {
+    { const mb = mixBar(); if (mb) page.append(mb); }
+    page.append(listSection("week", "Up next", workOn(all, "week"), 12, loading ? "Loading your tools…" : "Nothing lined up for this week.", { add: "week", capOf: CAPS.week, capList: "week" }));
+    page.append(lifeSection(lifeOn(all, "week"), "lifeWeek", LIFE_CAPS.week));
+    page.append(meetingsSection("Meetings", S.events.filter((e) => e.day > S.today), true, S.srcDone.has("cal") ? "No meetings the rest of the week." : "Loading your calendar…"));
+  } else if (v === "waiting") {
+    const w = (by.waiting || []).slice().sort((a, b) => (a.date || 0) - (b.date || 0));
+    page.append(listSection("waiting", "Oldest first", w, 15, loading ? "Loading your tools…" : "No one owes you anything right now.", { canTop: false, add: "waiting" }));
+  } else if (v === "backlog") {
+    page.append(listSection("backlog", "Highest score first", workOn(all, "backlog"), 20, loading ? "Loading your tools…" : "Backlog is empty.", { add: "backlog", capOf: CAPS.backlog, capList: "backlog" }));
+    const lb = lifeOn(all, "backlog");
+    if (lb.length) page.append(listSection("lifeBacklog", "Life, later", lb, 10, ""));
+  } else if (v === "parked") {
+    page.append(listSection("parked", "Parked", (by.parked || []), 25, "Nothing parked. Items land here when Backlog is full.", {}));
+  } else if (v === "loops") {
+    const L = (by.loops || []).slice().sort((a, b) => (b.date || 0) - (a.date || 0));
+    page.append(listSection("chats", "Chats", L.filter((e) => e.kind === "loop" && !e.idea), 12, S.digest === null ? "Loading…" : "Nothing unfinished in your Claude chats. The 5:14am sweep refreshes this every morning."));
+    page.append(listSection("ideas", "Ideas & started work", L.filter((e) => e.idea || e.kind !== "loop"), 12, "Nothing here yet.", { add: "loops" }));
+  } else if (v === "projects") {
+    projectsPage(page, all, loading);
+  } else if (v === "done") {
+    const D = (by.done || []).slice().sort((a, b) => doneAtOf(b) - doneAtOf(a));
+    if (!D.length) page.append(h("p", { class: "empty" }, "Nothing checked off yet."));
+    const groups = {}; for (const e of D) (groups[dayOf(doneAtOf(e) || Date.now())] ||= []).push(e);
+    for (const [day, list] of Object.entries(groups)) {
+      const label = day === ymd(0) ? "Today" : day === ymd(1) ? "Yesterday" : new Date(day + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" });
+      page.append(listSection("done-" + day, label, list, 25, "", { noPill: true }));
+    }
+  }
+}
+function doneAtOf(e) { return Date.parse((S.ov[e.key] || {}).doneAt || (e.manual && S.items[e.id] ? S.items[e.id].doneAt : "")) || S.cleared[e.key] || 0; }
+
+function render() {
+  // Background refreshes redraw the page; keep whatever Justin is typing where it is.
+  const ae = document.activeElement;
+  const typing = ae && (ae.tagName === "INPUT" || ae.tagName === "TEXTAREA") && ae.id ? { id: ae.id, value: ae.value, a: ae.selectionStart, b: ae.selectionEnd } : null;
+  paint();
+  if (typing) {
+    const el = $(typing.id);
+    if (el && el !== ae) { el.value = typing.value; el.focus(); try { el.setSelectionRange(typing.a, typing.b); } catch {} }
+  }
+}
+
+/* ---------- navigation ---------- */
+const wide = () => window.matchMedia("(min-width: 900px)").matches;
+function applySide() { $("shell").classList.toggle("collapsed", wide() && !S.sideOpen); if (wide()) $("shell").classList.remove("open"); }
+function go(v) {
+  S.view = v; store.set("view", v);
+  if (S.srcFilter) { S.srcFilter = null; renderSources(); }
+  if (S.search) setSearch("");
+  if (!wide()) $("shell").classList.remove("open");
+  if (v === "today" && S.date !== S.today) goTo(S.today); else render();
+  window.scrollTo({ top: 0 });
+}
+$("burger").addEventListener("click", () => {
+  if (wide()) { S.sideOpen = !S.sideOpen; store.set("side", S.sideOpen); applySide(); }
+  else $("shell").classList.toggle("open");
+});
+$("scrim").addEventListener("click", () => $("shell").classList.remove("open"));
+document.addEventListener("keydown", (ev) => { if (ev.key === "Escape") $("shell").classList.remove("open"); });
+window.addEventListener("resize", applySide);
+function goTo(date) {
+  if (date === S.date) return;
+  flushAll();
+  S.date = date; S.planErr = "";
+  watchPlan();
+  window.scrollTo({ top: 0 });
+}
+$("prevDay").addEventListener("click", () => goTo(shiftDate(S.date, -1)));
+$("nextDay").addEventListener("click", () => { if (S.date < shiftDate(S.today, 1)) goTo(shiftDate(S.date, 1)); });
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState !== "visible") return;
+  const t = ymd(0);
+  if (t !== S.today) { const wasToday = S.date === S.today; S.today = t; if (wasToday) goTo(t); }
+  renderSources(); render(); maybePlan();
+});
+setInterval(() => { const t = ymd(0); if (t !== S.today) { const wasToday = S.date === S.today; S.today = t; if (wasToday) goTo(t); else render(); } else render(); renderSources(); }, 60000);
+
+/* ---------- boot ---------- */
+applySide(); renderSources(); render();
+(async () => {
+  const [mcp, sample, db] = await Promise.all([claude.use("mcp"), claude.use("sample"), claude.use("db")]);
+  S.sample = sample || null;
+  if (!sample) S.planErr = "off";
+  if (db) { S.db = db; watchShared(); watchPlan(); }
+  else { S.db = false; S.digest = {}; S.plan = null; render(); }
+  if (!mcp) { S.mcp = false; for (const c of CONNECTORS) setStatus(c, "err", "not available here"); render(); }
+  else { S.mcp = mcp; startWatches(); }
+})();
+})();
+</script>
