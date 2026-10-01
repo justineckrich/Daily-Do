@@ -1,14 +1,15 @@
 # Daily-Do — Current State
 
-**Last updated:** 2026-09-30
+**Last updated:** 2026-10-01
 **Update this doc at the end of every session.**
 
 ---
 
 ## Round State
 
-- **Last round shipped:** 2 (app skeleton, login, Today page with saving). Live at https://daily-do-nm5o.netlify.app (auto-deploys from `main`).
-- **Next round ready:** 3 (meetings from Google Calendar)
+- **Where the app lives now:** the Claude artifact "Daily Do Do" (https://claude.ai/artifact/4KnrRr7gBXuH35DZ4oqAAG). Its source is backed up in `artifact/daily-do-do.html`. The Netlify app is parked (not deleted).
+- **Last round shipped:** 3 (priority engine: lanes, caps, score and reshuffle, mix bar, cut suggestions from the morning sweep)
+- **Next round ready:** 4
 - **Total rounds shipped:** 3
 
 ---
